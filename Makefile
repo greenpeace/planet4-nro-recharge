@@ -81,6 +81,7 @@ build: lint
 	docker build \
 		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
 		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG) \
+		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(BUILD_TAG) \
 		app
 
 push: push-tag push-latest
