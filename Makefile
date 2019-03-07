@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 BUILD_NAMESPACE ?= gcr.io
 BUILD_PROJECT ?= planet4-production
 BUILD_IMAGE ?= p4-nro-recharge
