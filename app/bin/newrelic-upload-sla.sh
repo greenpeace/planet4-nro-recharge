@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Uploading SLA data for application"
 
 path_prefix="$RECHARGE_BUCKET_PATH/sla"
 
 year="${DATE_START//-*/}"
-month="$(${DATE_START} | cut -d- -f2)"
-day="$(${DATE_START} | cut -d- -f3)"
+month="$(echo "${DATE_START}" | cut -d- -f2)"
+day="$(echo "${DATE_START}" | cut -d- -f3)"
 
 case $RECHARGE_PERIOD in
   year)
@@ -25,4 +24,6 @@ case $RECHARGE_PERIOD in
     ;;
 esac
 
-gsutil cp $RECHARGE_OUTPUT_FILE gs://$RECHARGE_BUCKET_NAME/$path_prefix/$path_stub/newrelic-sla.json
+echo "Uploading SLA data for application to gs://$RECHARGE_BUCKET_NAME/$path_prefix/$path_stub/newrelic-sla.json"
+
+gsutil cp "$RECHARGE_OUTPUT_FILE" "gs://$RECHARGE_BUCKET_NAME/$path_prefix/$path_stub/newrelic-sla.json"

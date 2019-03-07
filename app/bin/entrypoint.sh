@@ -1,12 +1,11 @@
 #!/bin/sh
 set -euo pipefail
 
-# Default Docker CMD will be /sbin/my_init
-if [ "$1" = "newrelic-get-application-sla.sh" ]
+# Default Docker CMD will be go.sh
+if [ "$1" = "go.sh" ]
 then
-  echo "Executing command:"
-  echo "$*"
-	exec go.sh
+  shift
+	exec go.sh "$@"
 else
   # Execute the custom CMD
   echo "Executing command:"

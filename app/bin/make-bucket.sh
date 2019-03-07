@@ -1,5 +1,5 @@
 #!/bin/sh
-set -euo pipefail
+set -exuo pipefail
 
 echo
 echo "========================================================================="
@@ -17,7 +17,7 @@ echo
 init_bucket() {
   # Make bucket if it doesn't exist
   gsutil ls -p "${RECHARGE_PROJECT_ID}" "gs://${RECHARGE_BUCKET_NAME}" \
-  || gsutil mb -l "${RECHARGE_BUCKET_LOCATION}" -p "${RECHARGE_PROJECT_ID}" \
+  >/dev/null || gsutil mb -l "${RECHARGE_BUCKET_LOCATION}" -p "${RECHARGE_PROJECT_ID}" \
     "gs://${RECHARGE_BUCKET_NAME}"
 
   # Apply labels
@@ -41,7 +41,7 @@ do
 
   [ $okay -eq 1 ] && exit
 
-  i=$(($i+1))
+  i=$((i+1))
   [ $i -gt $retry ] && break
   echo "Retry: $i/$retry"
 done
