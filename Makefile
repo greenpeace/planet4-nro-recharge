@@ -41,6 +41,8 @@ REVISION_TAG = $(shell git rev-parse --short HEAD)
 export BUILD_NUM
 export BUILD_TAG
 
+APP_DIR := app
+
 # ============================================================================
 
 # Check necessary commands exist
@@ -55,7 +57,7 @@ YAMLLINT := $(shell command -v yamllint 2> /dev/null)
 all: build run
 
 clean:
-	rm -f app/Dockerfile
+	rm -f $(APP_DIR)/Dockerfile
 
 lint: lint-sh lint-yaml lint-docker
 
@@ -65,13 +67,13 @@ lint-sh:
 lint-yaml:
 	@find . -type f -name '*.yml' | xargs yamllint
 
-lint-docker: app/Dockerfile
+lint-docker: $(APP_DIR)/Dockerfile
 ifndef DOCKER
 	$(error "docker is not installed: https://docs.docker.com/install/")
 endif
-	@docker run --rm -i hadolint/hadolint < app/Dockerfile
+	@docker run --rm -i hadolint/hadolint < $(APP_DIR)/Dockerfile
 
-app/Dockerfile:
+$(APP_DIR)/Dockerfile:
 	envsubst '$${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE}' < $@.in > $@
 
 pull:
@@ -82,7 +84,7 @@ build: lint
 		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
 		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG) \
 		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(BUILD_TAG) \
-		app
+		$(APP_DIR)
 
 push: push-tag push-latest
 
@@ -100,7 +102,7 @@ push-latest:
 
 run:
 ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
-ifeq (,$(wildcard app/$(RECHARGE_SERVICE_KEY_FILE)))
+ifeq (,$(wildcard $(APP_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
 	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(RECHARGE_SERVICE_KEY_FILE) file does not exist)
 endif
 endif
