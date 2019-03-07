@@ -74,6 +74,9 @@ endif
 app/Dockerfile:
 	envsubst '$${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE}' < $@.in > $@
 
+pull:
+	docker pull ${PARENT_IMAGE}
+
 build: lint
 	docker build \
 		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
