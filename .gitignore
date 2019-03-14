@@ -1,2 +1,5 @@
-app/Dockerfile
 *.json
+# configuration files
+APP_PATH
+app/Dockerfile
+secrets/*

@@ -10,6 +10,18 @@ export PARENT_IMAGE
 RECHARGE_SERVICE_KEY_FILE := gcloud-service-key.json
 export RECHARGE_SERVICE_KEY_FILE
 
+SECRETS_DIR := secrets
+
+# convert NRO name to lowercase, remove punctuation, replace space with hyphen
+ifneq ($(wildcard APP_PATH),)
+NRO ?= $(shell cat APP_PATH)
+endif
+
+ifneq ($(wildcard $(SECRETS_DIR)/env.$(NRO)),)
+include $(SECRETS_DIR)/env.$(NRO)
+export $(shell sed 's/=.*//' secrets/env.$(NRO))
+endif
+
 # ============================================================================
 
 SED_MATCH ?= [^a-zA-Z0-9._-]
@@ -57,11 +69,23 @@ YAMLLINT := $(shell command -v yamllint 2> /dev/null)
 all: build run
 
 clean:
-	rm -f $(APP_DIR)/Dockerfile
+	@$(MAKE) -j clean-dockerfile clean-serviceaccountkey
+
+clean-dockerfile:
+	@rm -f $(APP_DIR)/Dockerfile
+
+clean-serviceaccountkey:
+ifneq (,$(wildcard $(APP_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
+	@-gcloud iam service-accounts keys delete --quiet \
+		$(shell jq -r .private_key_id < $(APP_DIR)/$(RECHARGE_SERVICE_KEY_FILE)) \
+		--iam-account=$(shell jq -r .client_email < $(APP_DIR)/$(RECHARGE_SERVICE_KEY_FILE))
+	rm $(APP_DIR)/$(RECHARGE_SERVICE_KEY_FILE)
+endif
 
 lint: lint-sh lint-yaml lint-docker
 
 lint-sh:
+	@shellcheck configure
 	@find . -type f -name '*.sh' | xargs shellcheck
 
 lint-yaml:
