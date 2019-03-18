@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 BUILD_NAMESPACE ?= gcr.io
-BUILD_PROJECT ?= planet4-production
+BUILD_PROJECT ?= planet-4-151612
 BUILD_IMAGE ?= p4-nro-recharge
 
 PARENT_IMAGE ?= google/cloud-sdk:alpine
