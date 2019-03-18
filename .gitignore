@@ -1,5 +1,9 @@
+# Assume any JSON files are GCP service keys
 *.json
-# configuration files
+
+# Configuration files
 APP_PATH
+
+# Generated files
 app/Dockerfile
 secrets/*
