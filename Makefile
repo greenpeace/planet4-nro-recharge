@@ -66,7 +66,14 @@ YAMLLINT := $(shell command -v yamllint 2> /dev/null)
 
 # ============================================================================
 
-all: build run
+all: init build run
+
+init: .git/hooks/pre-commit
+
+.git/hooks/pre-commit:
+	@chmod 755 .githooks/*
+	@find .git/hooks -type l -exec rm {} \;
+	@find .githooks -type f -exec ln -sf ../../{} .git/hooks/ \;
 
 clean:
 	@$(MAKE) -j clean-dockerfile clean-serviceaccountkey
