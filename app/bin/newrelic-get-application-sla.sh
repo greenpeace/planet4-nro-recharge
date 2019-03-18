@@ -1,5 +1,5 @@
 #!/bin/sh
-set -ex
+set -euo pipefail
 
 app_id=${1:-${NEWRELIC_APP_ID}}
 

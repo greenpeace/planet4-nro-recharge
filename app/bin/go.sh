@@ -1,6 +1,6 @@
 #!/bin/sh
 # shellcheck disable=SC1091
-set -exuo pipefail
+set -euo pipefail
 
 # Creates DATE_START and DATE_END variables for re-use
 . get_dates.sh

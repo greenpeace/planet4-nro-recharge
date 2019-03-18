@@ -1,5 +1,5 @@
 #!/bin/sh
-set -exuo pipefail
+set -euo pipefail
 
 echo
 echo "========================================================================="

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -exu
+set -euo pipefail
 
 # Return NewRelic application ID from Name
 
