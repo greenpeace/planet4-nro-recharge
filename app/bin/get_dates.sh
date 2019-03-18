@@ -17,7 +17,7 @@ case $RECHARGE_PERIOD in
     if [ -z "${RECHARGE_PERIOD_MONTH}" ]
     then
       # Default to last month
-      DATE_START="$(date +"%Y-%m-01" -d "-1 Month")"
+      DATE_START="$(date "+%Y-%m-01" -d "-1 Month")"
     else
       # RECHARGE_PERIOD_MONTH Expects YEAR-MONTH string such as 2018-12
       DATE_START="$(date "+%Y-%m-01" -d "${RECHARGE_PERIOD_MONTH}-01")"
@@ -30,10 +30,10 @@ case $RECHARGE_PERIOD in
       # Default to last year
       DATE_START="$(date "+%Y-01-01" -d "-1 Year")"
     else
-      # RECHARGE_PERIOD_MONTH Expects YEAR-MONTH string such as 2018-12
-      DATE_START="$(date "+%Y-01-01" -d "${RECHARGE_PERIOD_YEAR}-01-01 -1 Year")"
+      # RECHARGE_PERIOD_YEAR Expects YEAR string such as 2018
+      DATE_START="$(date "+%Y-01-01" -d "${RECHARGE_PERIOD_YEAR}-01-01")"
     fi
-    DATE_END="$(date "+%Y-%m-%d" -d "$DATE_START +1 month -1 day")"
+    DATE_END="$(date "+%Y-%m-%d" -d "$DATE_START +1 year -1 day")"
     ;;
 	*)
 		>&2 echo "ERROR: unhandled recharge period: $RECHARGE_PERIOD"
