@@ -43,7 +43,6 @@ else
   previous_nro=
 fi
 
-
 echo "---"
 echo
 nro=${1:-$previous_nro}
@@ -62,7 +61,6 @@ fi
 
 echo "$nro" > APP_PATH
 APP_PATH=$nro
-store
 
 # Read values from existing configuration file
 if [[ -f "secrets/env.${nro}" ]]
