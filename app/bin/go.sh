@@ -3,7 +3,7 @@
 set -exuo pipefail
 
 # Creates DATE_START and DATE_END variables for re-use
-. ./get_dates.sh
+. get_dates.sh
 
 activate-service-account.sh
 
