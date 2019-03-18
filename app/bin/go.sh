@@ -20,3 +20,7 @@ then
 fi
 
 newrelic-upload-sla.sh
+
+date
+echo "OK"
+echo
