@@ -2,7 +2,7 @@
 set -euo pipefail
 
 case $RECHARGE_PERIOD in
-	day)
+	day|daily)
     if [ -z "${RECHARGE_PERIOD_DAY}" ]
     then
       # Default to yesterday
@@ -13,7 +13,7 @@ case $RECHARGE_PERIOD in
     fi
     DATE_END="$DATE_START"
 		;;
-	month)
+	month|monthly)
     if [ -z "${RECHARGE_PERIOD_MONTH}" ]
     then
       # Default to last month
@@ -24,7 +24,7 @@ case $RECHARGE_PERIOD in
     fi
     DATE_END="$(date "+%Y-%m-%d" -d "$DATE_START +1 month -1 day")"
 		;;
-	year)
+	year|yearly)
     if [ -z "${RECHARGE_PERIOD_YEAR}" ]
     then
       # Default to last year
