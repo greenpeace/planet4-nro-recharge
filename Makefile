@@ -82,11 +82,11 @@ clean-dockerfile:
 	@rm -f $(APP_DIR)/Dockerfile
 
 clean-serviceaccountkey:
-ifneq (,$(wildcard $(APP_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
+ifneq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
 	@-gcloud iam service-accounts keys delete --quiet \
-		$(shell jq -r .private_key_id < $(APP_DIR)/$(RECHARGE_SERVICE_KEY_FILE)) \
-		--iam-account=$(shell jq -r .client_email < $(APP_DIR)/$(RECHARGE_SERVICE_KEY_FILE))
-	rm $(APP_DIR)/$(RECHARGE_SERVICE_KEY_FILE)
+		$(shell jq -r .private_key_id < $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)) \
+		--iam-account=$(shell jq -r .client_email < $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))
+	rm $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)
 endif
 
 lint: lint-sh lint-yaml lint-docker
@@ -133,7 +133,7 @@ push-latest:
 
 run:
 ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
-ifeq (,$(wildcard $(APP_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
+ifeq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
 	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(RECHARGE_SERVICE_KEY_FILE) file does not exist)
 endif
 endif
@@ -155,5 +155,5 @@ endif
 		-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 		-e "NEWRELIC_APP_ID=$(NEWRELIC_APP_ID)" \
 		-e "RECHARGE_BUCKET_PATH=$(RECHARGE_BUCKET_PATH)" \
-		-e "RECHARGE_SERVICE_KEY=$(RECHARGE_SERVICE_KEY)" \
+		-e "RECHARGE_SERVICE_KEY=$(shell openssl base64 -A -in $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))" \
 		$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG)
