@@ -4,8 +4,8 @@ set -euo pipefail
 file=${1:-/app/${RECHARGE_SERVICE_KEY_FILE}}
 
 [ -n "$RECHARGE_SERVICE_KEY" ] && {
-  # Recharge is set in environment variable, expect base64 encoding
-  echo "${RECHARGE_SERVICE_KEY}" | base64 -d > "$file"
+  # Recharge is set in environment variable
+  echo "${RECHARGE_SERVICE_KEY}" > "$file"
 }
 
 [ ! -e "$file" ] && {
