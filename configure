@@ -43,15 +43,16 @@ else
   previous_nro=
 fi
 
+
 echo "---"
 echo
 nro=${1:-$previous_nro}
 echo "Application path:"
 echo " > eg: For the site https://greenpeace.org/international"
-echo " > enter 'international' (without quotes)"
+echo " >     you would enter 'international' (without quotes)"
 echo
 read -rp " [$nro] " this_nro
-nro=${this_nro:-$nro}
+nro="${this_nro:-$nro}"
 
 if [[ -z "${nro}" ]]
 then
@@ -60,6 +61,8 @@ then
 fi
 
 echo "$nro" > APP_PATH
+APP_PATH=$nro
+store
 
 # Read values from existing configuration file
 if [[ -f "secrets/env.${nro}" ]]
@@ -67,30 +70,45 @@ then
   read_properties "secrets/env.${nro}"
 fi
 
+
 echo "---"
 echo
-nr_appname=${NEWRELIC_APP_NAME:-}
+nr_apikey="${NEWRELIC_REST_API_KEY:-}"
+echo "NewRelic REST API key:"
+echo " > generate at https://rpm.newrelic.com/accounts/301342/integrations?page=api_keys"
+echo
+read -rp " [$nr_apikey] " this_apikey
+NEWRELIC_REST_API_KEY="${this_apikey:-$nr_apikey}"
+store
+
+
+echo
+echo "---"
+echo
+nr_appname="${NEWRELIC_APP_NAME:-}"
 echo "NewRelic Application Name:"
 echo " > eg: The production Canada site is called 'P4 Canada Production'"
 echo
 read -rp " [$nr_appname] " this_appname
-NEWRELIC_APP_NAME=${this_appname:-$nr_appname}
+NEWRELIC_APP_NAME="${this_appname:-$nr_appname}"
 store
 
+echo
+echo "Using NewRelic application name: $NEWRELIC_APP_NAME"
+
+echo
 echo "---"
 echo
 nr_appid="${NEWRELIC_APP_ID:-$(app/bin/newrelic-get-application-id.sh "${NEWRELIC_APP_NAME}")}"
 echo "NewRelic Application ID:"
-echo " > eg: The ID for Canada Production is 58028919"
-echo " > in the URL: https://rpm.newrelic.com/accounts/301342/applications/58028919"
 echo
 read -rp " [$nr_appid] " this_appid
 NEWRELIC_APP_ID=${this_appid:-$nr_appid}
 store
 
-echo "Visit https://rpm.newrelic.com/accounts/301342/applications/$nr_appid to confirm"
-
-echo "Using NewRelic application ID: $nr_appid"
+echo
+echo "Using NewRelic application ID: $NEWRELIC_APP_ID"
+echo "Visit https://rpm.newrelic.com/accounts/301342/applications/$NEWRELIC_APP_ID to confirm"
 
 echo
 echo "---"
