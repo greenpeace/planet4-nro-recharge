@@ -113,11 +113,11 @@ echo "---"
 echo
 
 # Check recharge service account key exists
-[ -e "app/gcloud-service-key.json" ] || {
+[ -e "secrets/gcloud-service-key.json" ] || {
   # Create new service account key
   service_account="p4-nro-recharge@planet4-production.iam.gserviceaccount.com"
   gcloud iam service-accounts keys list --iam-account="$service_account" --format=json
-  gcloud iam service-accounts keys create "app/gcloud-service-key.json" --iam-account="$service_account"
+  gcloud iam service-accounts keys create "secrets/gcloud-service-key.json" --iam-account="$service_account"
 }
 
-echo "Service account key ID: $(jq .private_key_id < app/gcloud-service-key.json)"
+echo "Service account key ID: $(jq .private_key_id < secrets/gcloud-service-key.json)"
