@@ -12,9 +12,10 @@ command -v gcloud > /dev/null || {
 }
 
 function store {
+  [ -d secrets ] || mkdir secrets
   # Save variables on exit
   [ -n "${nro:-}" ] && {
-    envsubst < env.in > secrets/env.${nro}
+    envsubst < env.in > "secrets/env.${nro}"
   }
 }
 
