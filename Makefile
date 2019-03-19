@@ -125,7 +125,7 @@ push-tag:
 	docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM)
 
 push-latest:
-	if [[ "$(PUSH_LATEST)" = "true" ]]; then { \
+	@if [[ "$(PUSH_LATEST)" = "true" ]]; then { \
 		docker tag $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG) $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):latest; \
 		docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):latest; \
 	}	else { \
