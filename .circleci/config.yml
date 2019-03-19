@@ -22,15 +22,11 @@ jobs:
           mkdir -p /tmp/workspace/var
           echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
       - run: make -j2 push
+      - run: TYPE="@rawalker Promotion" notify-job-hold.sh
       - run:
           name: Notify failure
           when: on_fail
           command: TYPE="Build-push gcr.io/planet-4-151612/p4-nro-recharge" notify-job-failure.sh
-
-  notify-promote:
-    <<: *defaults
-    steps:
-      - run: TYPE="@rawalker Promotion" notify-job-hold.sh
 
   promote:
     <<: *defaults
@@ -54,15 +50,8 @@ workflows:
           filters:
             branches:
               ignore: master
-      - hold-promote:
+      - hold:
           type: approval
-          requires:
-            - build-push
-          filters:
-            branches:
-              only: develop
-      - notify-promote:
-          context: org-global
           requires:
             - build-push
           filters:
@@ -71,7 +60,7 @@ workflows:
       - promote:
           context: org-global
           requires:
-            - hold-promote
+            - hold
           filters:
             branches:
               only: develop
