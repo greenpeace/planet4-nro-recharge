@@ -9,13 +9,13 @@ month="$(echo "${DATE_START}" | cut -d- -f2)"
 day="$(echo "${DATE_START}" | cut -d- -f3)"
 
 case $RECHARGE_PERIOD in
-  year)
+  year|yearly)
     path_stub="$year"
     ;;
-  month)
+  month|monthly)
     path_stub="$year/$month"
     ;;
-	day)
+	day|daily)
     path_stub="$year/$month/$day"
     ;;
   *)
