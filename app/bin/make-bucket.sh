@@ -1,13 +1,9 @@
 #!/bin/sh
 set -euo pipefail
 
-echo
-echo "========================================================================="
-
 init_bucket() {
   # Make bucket if it doesn't exist
   gsutil ls -p "${RECHARGE_PROJECT_ID}" "gs://${RECHARGE_BUCKET_NAME}" >/dev/null || {
-    echo
     echo "Initialising WP Stateless bucket"
     echo
     echo "Project: ${RECHARGE_PROJECT_ID}"
@@ -45,4 +41,4 @@ do
   echo "Retry: $i/$retry"
 done
 
-echo "FAILED initialising bucket gs://${RECHARGE_BUCKET_NAME}" && exit 1
+>&2 echo "FAILED initialising bucket gs://${RECHARGE_BUCKET_NAME}" && exit 1

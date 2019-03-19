@@ -41,5 +41,8 @@ case $RECHARGE_PERIOD in
 		;;
   esac
 
+echo "From:   ${DATE_START}"
+echo "To:     ${DATE_END}"
+
 export DATE_START
 export DATE_END

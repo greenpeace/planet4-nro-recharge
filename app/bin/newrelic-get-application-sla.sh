@@ -26,7 +26,6 @@ echo
 echo "Fetching NewRelic SLA data ..."
 echo
 echo "App:    https://rpm.newrelic.com/accounts/301342/applications/$app_id"
-echo "Period: ${RECHARGE_PERIOD}"
 echo "Dates:  $range"
 echo
 
