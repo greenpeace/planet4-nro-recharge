@@ -4,8 +4,7 @@ set -euo pipefail
 # Default Docker CMD will be go.sh
 if [ "$1" = "go.sh" ]
 then
-  shift
-	exec go.sh "$@"
+	exec "$@"
 else
   # Execute the custom CMD
   echo "Executing command:"

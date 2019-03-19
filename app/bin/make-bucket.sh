@@ -1,31 +1,26 @@
 #!/bin/sh
-set -exuo pipefail
-
-echo
-echo "========================================================================="
-echo
-echo "Initialising WP Stateless bucket"
-echo
-echo "Project: ${RECHARGE_PROJECT_ID}"
-echo "Labels:"
-echo " - app:         planet4-nro-recharge"
-echo " - environment: production"
-echo "Bucket:  gs://${RECHARGE_BUCKET_NAME}"
-echo "Region:  us"
-echo
+set -euo pipefail
 
 init_bucket() {
   # Make bucket if it doesn't exist
-  gsutil ls -p "${RECHARGE_PROJECT_ID}" "gs://${RECHARGE_BUCKET_NAME}" \
-  >/dev/null || gsutil mb -l "${RECHARGE_BUCKET_LOCATION}" -p "${RECHARGE_PROJECT_ID}" \
-    "gs://${RECHARGE_BUCKET_NAME}"
+  gsutil ls -p "${RECHARGE_PROJECT_ID}" "gs://${RECHARGE_BUCKET_NAME}" >/dev/null || {
+    echo "Initialising WP Stateless bucket"
+    echo
+    echo "Project: ${RECHARGE_PROJECT_ID}"
+    echo "Labels:"
+    echo " - app:         planet4-nro-recharge"
+    echo " - environment: production"
+    echo "Bucket:  gs://${RECHARGE_BUCKET_NAME}"
+    echo "Region:  us"
 
-  # Apply labels
-  gsutil label ch \
-    -l "app:planet4" \
-    -l "environment:production" \
-    -l "component:recharge" \
-    "gs://${RECHARGE_BUCKET_NAME}"
+    gsutil mb -l "${RECHARGE_BUCKET_LOCATION}" -p "${RECHARGE_PROJECT_ID}" "gs://${RECHARGE_BUCKET_NAME}"
+    # Apply labels
+    gsutil label ch \
+      -l "app:planet4" \
+      -l "environment:production" \
+      -l "component:recharge" \
+      "gs://${RECHARGE_BUCKET_NAME}"
+  }
 
   okay=1
 }
@@ -46,4 +41,4 @@ do
   echo "Retry: $i/$retry"
 done
 
-echo "FAILED initialising bucket gs://${RECHARGE_BUCKET_NAME}" && exit 1
+>&2 echo "FAILED initialising bucket gs://${RECHARGE_BUCKET_NAME}" && exit 1

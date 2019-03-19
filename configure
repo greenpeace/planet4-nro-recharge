@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+set -eauo pipefail
+
+command -v jq > /dev/null || {
+  >&2 echo "*** ERROR: Please install jq"
+  exit 1
+}
+
+command -v gcloud > /dev/null || {
+  >&2 echo " *** ERROR: Please install gcloud: https://cloud.google.com/sdk/install#installation_options"
+  exit 1
+}
+
+function store {
+  [ -d secrets ] || mkdir secrets
+  # Save variables on exit
+  [ -n "${nro:-}" ] && {
+    envsubst < env.in > "secrets/env.${nro}"
+  }
+}
+
+read_properties()
+{
+  file="$1"
+  while IFS="=" read -r key value; do
+    case "$key" in
+      '') : ;;
+      '#'*) : ;;
+      *) eval "$key=\"$value\""
+    esac
+  done < "$file"
+}
+
+[[ -n "${APP_PATH:-}" ]] && {
+  echo "APP_PATH is set in environment, writing ${APP_PATH}' to config ..."
+  echo "${APP_PATH}" > APP_PATH
+}
+
+if [[ -f "APP_PATH" ]]
+then
+  previous_nro=$(cat APP_PATH)
+else
+  previous_nro=
+fi
+
+echo "---"
+echo
+nro=${1:-$previous_nro}
+echo "Application path:"
+echo " > eg: For the site https://greenpeace.org/international"
+echo " >     you would enter 'international' (without quotes)"
+echo
+read -rp " [$nro] " this_nro
+nro="${this_nro:-$nro}"
+
+if [[ -z "${nro}" ]]
+then
+  echo "ERROR: Must specify the path to check"
+  exit 1
+fi
+
+echo "$nro" > APP_PATH
+APP_PATH=$nro
+
+# Read values from existing configuration file
+if [[ -f "secrets/env.${nro}" ]]
+then
+  read_properties "secrets/env.${nro}"
+fi
+
+
+echo "---"
+echo
+nr_apikey="${NEWRELIC_REST_API_KEY:-}"
+echo "NewRelic REST API key:"
+echo " > generate at https://rpm.newrelic.com/accounts/301342/integrations?page=api_keys"
+echo
+read -rp " [$nr_apikey] " this_apikey
+NEWRELIC_REST_API_KEY="${this_apikey:-$nr_apikey}"
+store
+
+
+echo
+echo "---"
+echo
+nr_appname="${NEWRELIC_APP_NAME:-}"
+echo "NewRelic Application Name:"
+echo " > eg: The production Canada site is called 'P4 Canada Production'"
+echo
+read -rp " [$nr_appname] " this_appname
+NEWRELIC_APP_NAME="${this_appname:-$nr_appname}"
+store
+
+echo
+echo "Using NewRelic application name: $NEWRELIC_APP_NAME"
+
+echo
+echo "---"
+echo
+nr_appid="${NEWRELIC_APP_ID:-$(app/bin/newrelic-get-application-id.sh "${NEWRELIC_APP_NAME}")}"
+echo "NewRelic Application ID:"
+echo
+read -rp " [$nr_appid] " this_appid
+NEWRELIC_APP_ID=${this_appid:-$nr_appid}
+store
+
+echo
+echo "Using NewRelic application ID: $NEWRELIC_APP_ID"
+echo "Visit https://rpm.newrelic.com/accounts/301342/applications/$NEWRELIC_APP_ID to confirm"
+
+echo
+echo "---"
+echo
+
+# Check recharge service account key exists
+[ -e "secrets/gcloud-service-key.json" ] || {
+  # Create new service account key
+  service_account="p4-nro-recharge@planet4-production.iam.gserviceaccount.com"
+  gcloud iam service-accounts keys list --iam-account="$service_account" --format=json
+  gcloud iam service-accounts keys create "secrets/gcloud-service-key.json" --iam-account="$service_account"
+}
+
+echo "Service account key ID: $(jq .private_key_id < secrets/gcloud-service-key.json)"

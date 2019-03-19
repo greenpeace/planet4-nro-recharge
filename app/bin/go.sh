@@ -1,12 +1,24 @@
 #!/bin/sh
 # shellcheck disable=SC1091
-set -exuo pipefail
+set -euo pipefail
 
-# Creates DATE_START and DATE_END variables for re-use
+echo
+echo "========================================================================="
+echo
+echo "Storing Recharge Data"
+echo
+echo "App:    ${NEWRELIC_APP_NAME}"
+echo "Path:   ${RECHARGE_BUCKET_PATH}"
+echo "Period: ${RECHARGE_PERIOD}"
+echo
+
+# Determines and exports DATE_START and DATE_END variables for re-use
 . get_dates.sh
 
+# Authenticates with GCP service account
 activate-service-account.sh
 
+# Ensures the bucket for storing data exists
 make-bucket.sh
 
 # Fetch SLA data for application on date
@@ -19,4 +31,9 @@ then
   exit 1
 fi
 
+# Stores SLA data in bucket
 newrelic-upload-sla.sh
+
+date
+echo "OK"
+echo

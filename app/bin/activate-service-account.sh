@@ -1,27 +1,24 @@
 #!/bin/sh
-set -eo pipefail
+set -euo pipefail
 
 file=${1:-/app/${RECHARGE_SERVICE_KEY_FILE}}
 
-if [ ! -e "$file" ]
-then
-  echo "$file not found ..."
-  # If the service account file doesn't exist, check environment
-  if [ -z "${RECHARGE_SERVICE_KEY}" ]
-  then
-    >&2 echo "ERROR :: environment variable GCLOUD_SERVICE_KEY not set"
-    exit 1
-  fi
+[ -n "$RECHARGE_SERVICE_KEY" ] && {
+  # Recharge is set in environment variable
+  echo "${RECHARGE_SERVICE_KEY}" > "$file"
+}
 
-  # Decode base64-encoded service key json
-  echo "${RECHARGE_SERVICE_KEY}" | base64 -d > "$file"
-fi
+[ ! -e "$file" ] && {
+  # Recharge gcloud service account key file not found
+  >&2 echo "ERROR: $file not found"
+  exit 1
+}
 
 # The working project id may different to the key project_id
-if [ -z "${RECHARGE_PROJECT_ID}" ]
+if [ -z "${RECHARGE_PROJECT_ID:-}" ]
 then
   # Default to service account project
-  echo "Warning:  RECHARGE_PROJECT_ID not set"
+  >&2 echo "WARNING: RECHARGE_PROJECT_ID not set, reading from file"
   RECHARGE_PROJECT_ID=$(jq -r .project_id "$file")
 fi
 

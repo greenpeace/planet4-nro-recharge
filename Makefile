@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 BUILD_NAMESPACE ?= gcr.io
-BUILD_PROJECT ?= planet4-production
+BUILD_PROJECT ?= planet-4-151612
 BUILD_IMAGE ?= p4-nro-recharge
 
 PARENT_IMAGE ?= google/cloud-sdk:alpine
@@ -9,6 +9,18 @@ export PARENT_IMAGE
 
 RECHARGE_SERVICE_KEY_FILE := gcloud-service-key.json
 export RECHARGE_SERVICE_KEY_FILE
+
+SECRETS_DIR := secrets
+
+# convert NRO name to lowercase, remove punctuation, replace space with hyphen
+ifneq ($(wildcard APP_PATH),)
+NRO ?= $(shell cat APP_PATH)
+endif
+
+ifneq ($(wildcard $(SECRETS_DIR)/env.$(NRO)),)
+include $(SECRETS_DIR)/env.$(NRO)
+export $(shell sed 's/=.*//' secrets/env.$(NRO))
+endif
 
 # ============================================================================
 
@@ -54,14 +66,33 @@ YAMLLINT := $(shell command -v yamllint 2> /dev/null)
 
 # ============================================================================
 
-all: build run
+all: init build run
+
+init: .git/hooks/pre-commit
+
+.git/hooks/pre-commit:
+	@chmod 755 .githooks/*
+	@find .git/hooks -type l -exec rm {} \;
+	@find .githooks -type f -exec ln -sf ../../{} .git/hooks/ \;
 
 clean:
-	rm -f $(APP_DIR)/Dockerfile
+	@$(MAKE) -j clean-dockerfile clean-serviceaccountkey
+
+clean-dockerfile:
+	@rm -f $(APP_DIR)/Dockerfile
+
+clean-serviceaccountkey:
+ifneq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
+	@-gcloud iam service-accounts keys delete --quiet \
+		$(shell jq -r .private_key_id < $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)) \
+		--iam-account=$(shell jq -r .client_email < $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))
+	rm $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)
+endif
 
 lint: lint-sh lint-yaml lint-docker
 
 lint-sh:
+	@shellcheck configure
 	@find . -type f -name '*.sh' | xargs shellcheck
 
 lint-yaml:
@@ -90,10 +121,11 @@ push: push-tag push-latest
 
 push-tag:
 	docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(BUILD_TAG)
+	docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG)
 	docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM)
 
 push-latest:
-	if [[ "$(PUSH_LATEST)" = "true" ]]; then { \
+	@if [[ "$(PUSH_LATEST)" = "true" ]]; then { \
 		docker tag $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG) $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):latest; \
 		docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):latest; \
 	}	else { \
@@ -102,7 +134,7 @@ push-latest:
 
 run:
 ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
-ifeq (,$(wildcard $(APP_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
+ifeq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
 	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(RECHARGE_SERVICE_KEY_FILE) file does not exist)
 endif
 endif
@@ -123,7 +155,6 @@ endif
 	docker run --rm -t \
 		-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 		-e "NEWRELIC_APP_ID=$(NEWRELIC_APP_ID)" \
-		-e "NEWRELIC_APP_NAME=$(NEWRELIC_APP_NAME)" \
 		-e "RECHARGE_BUCKET_PATH=$(RECHARGE_BUCKET_PATH)" \
-		-e "RECHARGE_SERVICE_KEY=$(RECHARGE_SERVICE_KEY)" \
+		-e "RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))" \
 		$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG)

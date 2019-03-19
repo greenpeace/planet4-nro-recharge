@@ -1,5 +1,5 @@
 #!/bin/sh
-set -ex
+set -euo pipefail
 
 app_id=${1:-${NEWRELIC_APP_ID}}
 
@@ -21,6 +21,13 @@ range=${2:-"from=${DATE_START}Z00:00:00+00:00&to=${DATE_END}Z23:59:59+00:00"}
 
 # https://docs.newrelic.com/docs/apm/reports/service-level-agreements/api-examples-sla-reports
 mkdir -p /tmp
+
+echo
+echo "Fetching NewRelic SLA data ..."
+echo
+echo "App:    https://rpm.newrelic.com/accounts/301342/applications/$app_id"
+echo "Dates:  $range"
+echo
 
 curl -s -X GET "https://api.newrelic.com/v2/applications/$app_id/metrics/data.json" \
      -H "X-Api-Key:$NEWRELIC_REST_API_KEY" \
