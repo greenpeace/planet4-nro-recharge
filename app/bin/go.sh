@@ -21,18 +21,8 @@ activate-service-account.sh
 # Ensures the bucket for storing data exists
 make-bucket.sh
 
-# Fetch SLA data for application on date
-newrelic-get-application-sla.sh
-
-# No file?
-if [ ! -f "${RECHARGE_OUTPUT_FILE}" ]
-then
-  >&2 echo "Error: output file '${RECHARGE_OUTPUT_FILE}' not found"
-  exit 1
-fi
-
-# Stores SLA data in bucket
-newrelic-upload-sla.sh
+# Extract, transform, load NewRelic SLA data to BigQuery
+newrelic.sh
 
 date
 echo "OK"
