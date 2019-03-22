@@ -18,6 +18,7 @@ ENV \
   NEWRELIC_APP_NAME="" \
   NEWRELIC_REST_API_KEY="" \
   PATH="/app/bin:${PATH}" \
+  RECHARGE_BQ_DATASET="recharge" \
   RECHARGE_BUCKET_LOCATION="us" \
   RECHARGE_BUCKET_NAME="p4-nro-recharge" \
   RECHARGE_BUCKET_PATH="" \
