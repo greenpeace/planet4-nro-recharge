@@ -1,5 +1,5 @@
-#!/bin/sh
-set -euo pipefail
+#!/usr/bin/env bash
+set -eo pipefail
 
 app_id=${1:-${NEWRELIC_APP_ID}}
 
@@ -33,4 +33,5 @@ curl -s -X GET "https://api.newrelic.com/v2/applications/$app_id/metrics/data.js
      -H "X-Api-Key:$NEWRELIC_REST_API_KEY" \
      -d "names[]=Apdex&names[]=EndUser/Apdex&$range&summarize=true" -o "$RECHARGE_OUTPUT_FILE"
 
-jq . < "$RECHARGE_OUTPUT_FILE"
+# Echo output for logs
+jq -M . < "$RECHARGE_OUTPUT_FILE"
