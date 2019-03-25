@@ -79,7 +79,7 @@ init: .git/hooks/pre-commit
 	@find .githooks -type f -exec ln -sf ../../{} .git/hooks/ \;
 
 clean:
-	@$(MAKE) -sj clean-dockerfile clean-bigqueryrc clean-serviceaccountkey
+	@$(MAKE) -sj clean-dockerfile clean-bigqueryrc
 
 clean-bigqueryrc:
 	@rm -f $(APP_DIR)/.bigqueryrc
