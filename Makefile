@@ -10,6 +10,11 @@ export PARENT_IMAGE
 RECHARGE_SERVICE_KEY_FILE := gcloud-service-key.json
 export RECHARGE_SERVICE_KEY_FILE
 
+# Set default dataset for testing
+ifeq ($(strip $(RECHARGE_BQ_DATASET)),)
+RECHARGE_BQ_DATASET := recharge_test
+endif
+
 SECRETS_DIR := secrets
 
 # convert NRO name to lowercase, remove punctuation, replace space with hyphen
@@ -152,7 +157,13 @@ ifeq ($(strip $(NEWRELIC_APP_NAME)),)
 	$(error Environment variables NEWRELIC_APP_ID and NEWRELIC_APP_NAME not set: You must set at least one of these variables)
 endif
 endif
+
+ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
+	$(warning *** Using test dataset: RECHARGE_BQ_DATASET=recharge_test ***)
+endif
+
 	docker run --rm -t \
+		-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
 		-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 		-e "NEWRELIC_APP_ID=$(NEWRELIC_APP_ID)" \
 		-e "RECHARGE_BUCKET_PATH=$(RECHARGE_BUCKET_PATH)" \
