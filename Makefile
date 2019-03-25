@@ -67,7 +67,7 @@ YAMLLINT := $(shell command -v yamllint 2> /dev/null)
 
 # ============================================================================
 
-all: init build run
+all: init build test
 
 init: .git/hooks/pre-commit
 
@@ -77,7 +77,10 @@ init: .git/hooks/pre-commit
 	@find .githooks -type f -exec ln -sf ../../{} .git/hooks/ \;
 
 clean:
-	@$(MAKE) -j clean-dockerfile clean-serviceaccountkey
+	@$(MAKE) -sj clean-dockerfile clean-bigqueryrc clean-serviceaccountkey
+
+clean-bigqueryrc:
+	@rm -f $(APP_DIR)/.bigqueryrc
 
 clean-dockerfile:
 	@rm -f $(APP_DIR)/Dockerfile
@@ -105,13 +108,16 @@ ifndef DOCKER
 endif
 	@docker run --rm -i hadolint/hadolint < $(APP_DIR)/Dockerfile
 
+$(APP_DIR)/.bigqueryrc:
+	envsubst '$${RECHARGE_PROJECT_ID}' < $@.in > $@
+
 $(APP_DIR)/Dockerfile:
-	envsubst '$${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE}' < $@.in > $@
+	envsubst '$${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE} $${RECHARGE_PROJECT_ID}' < $@.in > $@
 
 pull:
 	docker pull ${PARENT_IMAGE}
 
-build: lint
+build: lint $(APP_DIR)/.bigqueryrc
 	docker build \
 		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
 		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG) \
