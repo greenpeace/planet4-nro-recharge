@@ -19,7 +19,7 @@ echo
 activate-service-account.sh
 
 # Ensures the bucket for storing data exists
-make-bucket.sh
+init-gcs.sh
 
 # Extract, transform, load NewRelic SLA data to BigQuery
 newrelic.sh
