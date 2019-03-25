@@ -23,6 +23,8 @@ jq -cM \
   + .metrics[0].timeslices[0].values
   | del(.metrics)' "$input_file" | tee "$output_file"
 
+bq-store.sh "$output_file" newrelic_appdex
+
 # End user
 output_file="$output_dir/enduser-$(basename "$input_file")"
 
@@ -34,3 +36,5 @@ jq -cM \
   + { range: $range, nro: $nro, from: .from[0:-6], to: .to[0:-6] }
   + .metrics[1].timeslices[0].values
   | del(.metrics)' "$input_file" | tee "$output_file"
+
+bq-store.sh "$output_file" newrelic_enduser
