@@ -1,14 +1,14 @@
 SHELL := /bin/bash
 
+.EXPORT_ALL_VARIABLES:
+
 BUILD_NAMESPACE ?= gcr.io
 BUILD_PROJECT ?= planet-4-151612
 BUILD_IMAGE ?= p4-nro-recharge
 
 PARENT_IMAGE ?= google/cloud-sdk:alpine
-export PARENT_IMAGE
 
 RECHARGE_SERVICE_KEY_FILE := gcloud-service-key.json
-export RECHARGE_SERVICE_KEY_FILE
 
 # Set default dataset for testing
 ifeq ($(strip $(RECHARGE_BQ_DATASET)),)
@@ -24,7 +24,6 @@ endif
 
 ifneq ($(wildcard $(SECRETS_DIR)/env.$(NRO)),)
 include $(SECRETS_DIR)/env.$(NRO)
-export $(shell sed 's/=.*//' secrets/env.$(NRO))
 endif
 
 # ============================================================================
@@ -54,9 +53,6 @@ PUSH_LATEST := true
 endif
 
 REVISION_TAG = $(shell git rev-parse --short HEAD)
-
-export BUILD_NUM
-export BUILD_TAG
 
 APP_DIR := app
 
