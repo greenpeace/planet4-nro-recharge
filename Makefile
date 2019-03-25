@@ -141,7 +141,9 @@ push-latest:
 		echo "Not tagged.. skipping latest"; \
 	} fi
 
-run:
+test: test-run test-clean
+
+test-run:
 ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
 ifeq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
 	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(RECHARGE_SERVICE_KEY_FILE) file does not exist)
@@ -171,5 +173,8 @@ endif
 		-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 		-e "NEWRELIC_APP_ID=$(NEWRELIC_APP_ID)" \
 		-e "RECHARGE_BUCKET_PATH=$(RECHARGE_BUCKET_PATH)" \
-		-e "RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))" \
+		-e 'RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))' \
 		$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG)
+
+test-clean:
+	$(warning Not yet implemented. @TODO delete testing bucket and bq data)
