@@ -54,8 +54,6 @@ else
 PUSH_LATEST := true
 endif
 
-REVISION_TAG = $(shell git rev-parse --short HEAD)
-
 APP_DIR := app
 
 # ============================================================================
@@ -122,7 +120,6 @@ pull:
 build: lint $(APP_DIR)/.bigqueryrc
 	docker build \
 		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
-		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG) \
 		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(BUILD_TAG) \
 		$(APP_DIR)
 
@@ -130,12 +127,11 @@ push: push-tag push-latest
 
 push-tag:
 	docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(BUILD_TAG)
-	docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG)
 	docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM)
 
 push-latest:
 	@if [[ "$(PUSH_LATEST)" = "true" ]]; then { \
-		docker tag $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG) $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):latest; \
+		docker tag $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):latest; \
 		docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):latest; \
 	}	else { \
 		echo "Not tagged.. skipping latest"; \
@@ -174,7 +170,7 @@ endif
 		-e "NEWRELIC_APP_ID=$(NEWRELIC_APP_ID)" \
 		-e "RECHARGE_BUCKET_PATH=$(RECHARGE_BUCKET_PATH)" \
 		-e 'RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))' \
-		$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG)
+		$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM)
 
 test-clean:
 	$(warning Not yet implemented. @TODO delete testing bucket and bq data)
