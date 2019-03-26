@@ -1,3 +1,2 @@
---format=prettyjson
 --location=US
 --project_id=${RECHARGE_PROJECT_ID}
