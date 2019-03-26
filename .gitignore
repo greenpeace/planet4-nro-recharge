@@ -1,5 +1,8 @@
 # Assume any JSON files are GCP service keys
 *.json
+# Except for
+!app/schema/*
+!app/lifecycle.json
 
 # Configuration files
 APP_PATH
@@ -8,3 +11,4 @@ APP_PATH
 app/.bigqueryrc
 app/Dockerfile
 secrets/*
+bucket/*
