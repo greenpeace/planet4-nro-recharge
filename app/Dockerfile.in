@@ -14,6 +14,7 @@ ENTRYPOINT ["entrypoint.sh"]
 CMD ["go.sh"]
 
 ENV \
+  BATCH_UPLOAD="true" \
   BIGQUERYRC="/app/.bigqueryrc" \
   NEWRELIC_APP_ID="" \
   NEWRELIC_APP_NAME="" \
