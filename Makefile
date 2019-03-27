@@ -164,7 +164,7 @@ ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
 	$(warning *** Using test dataset: RECHARGE_BQ_DATASET=recharge_test ***)
 endif
 
-	docker run --rm -t \
+	docker run --rm \
 		-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
 		-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 		-e "NEWRELIC_APP_ID=$(NEWRELIC_APP_ID)" \
