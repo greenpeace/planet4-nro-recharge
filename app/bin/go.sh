@@ -33,7 +33,13 @@ echo
 activate-service-account.sh
 
 # Ensures the bucket for storing data exists
-init-gcs.sh
+init-gcs.sh &
+
+# Ensures the bucket for storing data exists
+init-bq.sh &
+
+# Wait for initialisation to complete
+wait
 
 echo
 echo "========================================================================="
