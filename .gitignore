@@ -2,7 +2,7 @@
 *.json
 # Except for
 !app/schema/*
-!app/lifecycle.json
+!app/gcs-usage-lifecycle.json
 
 # Configuration files
 APP_PATH
