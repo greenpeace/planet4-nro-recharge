@@ -46,7 +46,7 @@ init_gcs_usage_bucket() {
   gsutil mb -l "${RECHARGE_BUCKET_LOCATION}" -p "${RECHARGE_PROJECT_ID}" "gs://${USAGE_BUCKET_NAME}"
 
   # Apply lifecycle configuration
-  gsutil lifecycle set lifecycle.json "gs://${USAGE_BUCKET_NAME}"
+  gsutil lifecycle set gcs-usage-lifecycle.json "gs://${USAGE_BUCKET_NAME}"
 
   # Apply labels
   gsutil label ch \
