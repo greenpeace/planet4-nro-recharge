@@ -9,7 +9,7 @@ BUILD_IMAGE ?= p4-nro-recharge
 PARENT_IMAGE ?= google/cloud-sdk:alpine
 
 RECHARGE_PROJECT_ID ?= planet4-production
-
+RECHARGE_BUCKET_NAME ?= p4-nro-recharge
 RECHARGE_SERVICE_KEY_FILE := gcloud-service-key.json
 
 # Set default dataset for testing
@@ -112,7 +112,7 @@ $(APP_DIR)/.bigqueryrc:
 	envsubst '$${RECHARGE_PROJECT_ID}' < $@.in > $@
 
 $(APP_DIR)/Dockerfile:
-	envsubst '$${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE} $${RECHARGE_PROJECT_ID}' < $@.in > $@
+	envsubst '$${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE} $${RECHARGE_PROJECT_ID} $${RECHARGE_BUCKET_NAME}' < $@.in > $@
 
 pull:
 	docker pull ${PARENT_IMAGE}
@@ -174,3 +174,20 @@ endif
 
 test-clean:
 	$(warning Not yet implemented. @TODO delete testing bucket and bq data)
+
+rebuild-dataset: # Recreates the entire dataset with values from GCS bucekt
+ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
+ifeq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
+	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(RECHARGE_SERVICE_KEY_FILE) file does not exist)
+endif
+endif
+
+ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
+	$(warning *** Using test dataset: RECHARGE_BQ_DATASET=recharge_test ***)
+endif
+		docker run --rm -ti \
+			-v "bucket:/tmp/$(RECHARGE_BUCKET_NAME)" \
+			-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
+			-e 'RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))' \
+			$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
+			rebuild-dataset.sh
