@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-
 path_prefix="$RECHARGE_BUCKET_PATH/sla"
 
 year="${DATE_START//-*/}"
@@ -9,13 +8,13 @@ month="$(echo "${DATE_START}" | cut -d- -f2)"
 day="$(echo "${DATE_START}" | cut -d- -f3)"
 
 case $RECHARGE_PERIOD in
-  year|yearly)
+  year)
     path_stub="$year"
     ;;
-  month|monthly)
+  month)
     path_stub="$year/$month"
     ;;
-	day|daily)
+	day)
     path_stub="$year/$month/$day"
     ;;
   *)

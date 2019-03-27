@@ -1,0 +1,45 @@
+[{
+  "type": "FLOAT",
+  "name": "threshold_min",
+  "mode": "NULLABLE"
+}, {
+  "type": "FLOAT",
+  "name": "threshold",
+  "mode": "NULLABLE"
+}, {
+  "type": "DATE",
+  "name": "from"
+}, {
+  "type": "DATE",
+  "name": "to"
+}, {
+  "type": "FLOAT",
+  "name": "value",
+  "mode": "NULLABLE"
+}, {
+  "type": "STRING",
+  "name": "period"
+}, {
+  "type": "STRING",
+  "name": "nro"
+}, {
+  "type": "FLOAT",
+  "name": "score",
+  "mode": "NULLABLE"
+}, {
+  "type": "INTEGER",
+  "name": "s",
+  "mode": "NULLABLE"
+}, {
+  "type": "INTEGER",
+  "name": "t",
+  "mode": "NULLABLE"
+}, {
+  "type": "INTEGER",
+  "name": "f",
+  "mode": "NULLABLE"
+}, {
+  "type": "INTEGER",
+  "name": "count",
+  "mode": "NULLABLE"
+}]

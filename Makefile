@@ -1,14 +1,21 @@
 SHELL := /bin/bash
 
+.EXPORT_ALL_VARIABLES:
+
 BUILD_NAMESPACE ?= gcr.io
 BUILD_PROJECT ?= planet-4-151612
 BUILD_IMAGE ?= p4-nro-recharge
 
 PARENT_IMAGE ?= google/cloud-sdk:alpine
-export PARENT_IMAGE
 
+RECHARGE_PROJECT_ID ?= planet4-production
+RECHARGE_BUCKET_NAME ?= p4-nro-recharge
 RECHARGE_SERVICE_KEY_FILE := gcloud-service-key.json
-export RECHARGE_SERVICE_KEY_FILE
+
+# Set default dataset for testing
+ifeq ($(strip $(RECHARGE_BQ_DATASET)),)
+RECHARGE_BQ_DATASET := recharge_test
+endif
 
 SECRETS_DIR := secrets
 
@@ -19,7 +26,6 @@ endif
 
 ifneq ($(wildcard $(SECRETS_DIR)/env.$(NRO)),)
 include $(SECRETS_DIR)/env.$(NRO)
-export $(shell sed 's/=.*//' secrets/env.$(NRO))
 endif
 
 # ============================================================================
@@ -48,11 +54,6 @@ else
 PUSH_LATEST := true
 endif
 
-REVISION_TAG = $(shell git rev-parse --short HEAD)
-
-export BUILD_NUM
-export BUILD_TAG
-
 APP_DIR := app
 
 # ============================================================================
@@ -66,7 +67,7 @@ YAMLLINT := $(shell command -v yamllint 2> /dev/null)
 
 # ============================================================================
 
-all: init build run
+all: init build test
 
 init: .git/hooks/pre-commit
 
@@ -76,7 +77,10 @@ init: .git/hooks/pre-commit
 	@find .githooks -type f -exec ln -sf ../../{} .git/hooks/ \;
 
 clean:
-	@$(MAKE) -j clean-dockerfile clean-serviceaccountkey
+	@$(MAKE) -sj clean-dockerfile clean-bigqueryrc
+
+clean-bigqueryrc:
+	@rm -f $(APP_DIR)/.bigqueryrc
 
 clean-dockerfile:
 	@rm -f $(APP_DIR)/Dockerfile
@@ -104,16 +108,18 @@ ifndef DOCKER
 endif
 	@docker run --rm -i hadolint/hadolint < $(APP_DIR)/Dockerfile
 
+$(APP_DIR)/.bigqueryrc:
+	envsubst '$${RECHARGE_PROJECT_ID}' < $@.in > $@
+
 $(APP_DIR)/Dockerfile:
-	envsubst '$${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE}' < $@.in > $@
+	envsubst '$${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE} $${RECHARGE_PROJECT_ID} $${RECHARGE_BUCKET_NAME}' < $@.in > $@
 
 pull:
 	docker pull ${PARENT_IMAGE}
 
-build: lint
+build: lint $(APP_DIR)/.bigqueryrc
 	docker build \
 		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
-		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG) \
 		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(BUILD_TAG) \
 		$(APP_DIR)
 
@@ -121,18 +127,19 @@ push: push-tag push-latest
 
 push-tag:
 	docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(BUILD_TAG)
-	docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG)
 	docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM)
 
 push-latest:
 	@if [[ "$(PUSH_LATEST)" = "true" ]]; then { \
-		docker tag $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG) $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):latest; \
+		docker tag $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):latest; \
 		docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):latest; \
 	}	else { \
 		echo "Not tagged.. skipping latest"; \
 	} fi
 
-run:
+test: test-run test-clean
+
+test-run:
 ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
 ifeq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
 	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(RECHARGE_SERVICE_KEY_FILE) file does not exist)
@@ -152,9 +159,41 @@ ifeq ($(strip $(NEWRELIC_APP_NAME)),)
 	$(error Environment variables NEWRELIC_APP_ID and NEWRELIC_APP_NAME not set: You must set at least one of these variables)
 endif
 endif
-	docker run --rm -t \
+
+ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
+	$(warning *** Using test dataset: RECHARGE_BQ_DATASET=recharge_test ***)
+endif
+
+	docker run --rm \
+		-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
 		-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 		-e "NEWRELIC_APP_ID=$(NEWRELIC_APP_ID)" \
 		-e "RECHARGE_BUCKET_PATH=$(RECHARGE_BUCKET_PATH)" \
-		-e "RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))" \
-		$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(REVISION_TAG)
+		-e 'RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))' \
+		$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM)
+
+test-clean:
+	$(warning Not yet implemented. @TODO delete testing bucket and bq data)
+
+rebuild-dataset: # Recreates the entire dataset with values from GCS bucekt
+ifeq ($(strip $(NEWRELIC_REST_API_KEY)),)
+	$(error Environment variable NEWRELIC_REST_API_KEY is not set)
+endif
+
+ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
+ifeq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
+	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(RECHARGE_SERVICE_KEY_FILE) file does not exist)
+endif
+endif
+
+ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
+	$(warning *** Using test dataset: RECHARGE_BQ_DATASET=recharge_test ***)
+endif
+		docker run --rm -ti \
+			-v "$(PWD)/batch:/tmp/batch" \
+			-v "$(PWD)/bucket:/tmp/bucket" \
+			-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
+			-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
+			-e 'RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))' \
+			$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
+			rebuild-dataset.sh
