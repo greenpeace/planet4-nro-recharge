@@ -7,8 +7,10 @@ set -euo pipefail
 # timeout is given by TIMEOUT in seconds (default 1.)
 #
 # Successive backoffs double the timeout.
+
 function retry {
-  local max_attempts=${ATTEMPTS:-5}
+
+  local max_attempts=${ATTEMPTS:-3}
   local timeout=${TIMEOUT:-1}
   local attempt=1
   local exitCode
@@ -36,4 +38,4 @@ function retry {
   return $exitCode
 }
 
-export retry
+export -f retry
