@@ -176,6 +176,10 @@ test-clean:
 	$(warning Not yet implemented. @TODO delete testing bucket and bq data)
 
 rebuild-dataset: # Recreates the entire dataset with values from GCS bucekt
+ifeq ($(strip $(NEWRELIC_REST_API_KEY)),)
+	$(error Environment variable NEWRELIC_REST_API_KEY is not set)
+endif
+
 ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
 ifeq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
 	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(RECHARGE_SERVICE_KEY_FILE) file does not exist)
@@ -186,8 +190,10 @@ ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
 	$(warning *** Using test dataset: RECHARGE_BQ_DATASET=recharge_test ***)
 endif
 		docker run --rm -ti \
-			-v "bucket:/tmp/$(RECHARGE_BUCKET_NAME)" \
+			-v "$(PWD)/batch:/tmp/batch" \
+			-v "$(PWD)/bucket:/tmp/bucket" \
 			-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
+			-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 			-e 'RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))' \
 			$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
 			rebuild-dataset.sh
