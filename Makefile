@@ -76,6 +76,8 @@ init: .git/hooks/pre-commit
 	@find .git/hooks -type l -exec rm {} \;
 	@find .githooks -type f -exec ln -sf ../../{} .git/hooks/ \;
 
+# ============================================================================
+
 clean:
 	@$(MAKE) -sj clean-dockerfile clean-bigqueryrc
 
@@ -93,6 +95,8 @@ ifneq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
 	rm $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)
 endif
 
+# ============================================================================
+
 lint: lint-sh lint-yaml lint-docker
 
 lint-sh:
@@ -107,6 +111,8 @@ ifndef DOCKER
 	$(error "docker is not installed: https://docs.docker.com/install/")
 endif
 	@docker run --rm -i hadolint/hadolint < $(APP_DIR)/Dockerfile
+
+#	============================================================================
 
 $(APP_DIR)/.bigqueryrc:
 	envsubst '$${RECHARGE_PROJECT_ID}' < $@.in > $@
@@ -137,6 +143,8 @@ push-latest:
 		echo "Not tagged.. skipping latest"; \
 	} fi
 
+#	============================================================================
+
 test: test-run test-clean
 
 test-run:
@@ -164,7 +172,7 @@ ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
 	$(warning *** Using test dataset: RECHARGE_BQ_DATASET=recharge_test ***)
 endif
 
-	docker run --rm \
+	docker run --name recharge-test --rm \
 		-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
 		-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 		-e "NEWRELIC_APP_ID=$(NEWRELIC_APP_ID)" \
@@ -174,6 +182,8 @@ endif
 
 test-clean:
 	$(warning Not yet implemented. @TODO delete testing bucket and bq data)
+
+#	============================================================================
 
 rebuild-dataset: # Recreates the entire dataset with values from GCS bucekt
 ifeq ($(strip $(NEWRELIC_REST_API_KEY)),)
@@ -189,7 +199,7 @@ endif
 ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
 	$(warning *** Using test dataset: RECHARGE_BQ_DATASET=recharge_test ***)
 endif
-		docker run --rm -ti \
+		docker run --name recharge-test --rm -ti \
 			-v "$(PWD)/batch:/tmp/batch" \
 			-v "$(PWD)/bucket:/tmp/bucket" \
 			-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
