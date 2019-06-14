@@ -32,14 +32,15 @@ echo
 # Authenticates with GCP service account
 activate-service-account.sh
 
-# Ensures the bucket for storing data exists
-init-gcs.sh &
 
-# Ensures the bucket for storing data exists
-init-bq.sh &
+# Initialise bucket and dataset, unless FAST_INIT is set to 'true'
+[[ "${FAST_INIT}" = true ]] || {
+  # Ensures the bucket for storing data exists
+  init-gcs.sh
 
-# Wait for initialisation to complete
-wait
+  # Ensures the bucket for storing data exists
+  init-bq.sh
+}
 
 echo
 echo "========================================================================="
