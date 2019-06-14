@@ -12,6 +12,8 @@ RECHARGE_PROJECT_ID ?= planet4-production
 RECHARGE_BUCKET_NAME ?= p4-nro-recharge
 RECHARGE_SERVICE_KEY_FILE := gcloud-service-key.json
 
+# Version of kubectl to install
+KUBECTL_VERSION ?= 1.14.0
 # Set default dataset for testing
 ifeq ($(strip $(RECHARGE_BQ_DATASET)),)
 RECHARGE_BQ_DATASET := recharge_test
