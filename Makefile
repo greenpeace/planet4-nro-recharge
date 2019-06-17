@@ -15,6 +15,9 @@ RECHARGE_SERVICE_KEY_FILE := gcloud-service-key.json
 # If FAST_INIT is true, don't recreate all buckets/datasets
 FAST_INIT ?= true
 
+# Use Docker buildkit?
+DOCKER_BUILDKIT ?= 1
+
 # Version of kubectl to install
 KUBECTL_VERSION ?= 1.14.0
 
