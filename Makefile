@@ -31,15 +31,6 @@ endif
 
 SECRETS_DIR := secrets
 
-# convert NRO name to lowercase, remove punctuation, replace space with hyphen
-ifneq ($(wildcard APP_PATH),)
-NRO ?= $(shell cat APP_PATH)
-endif
-
-ifneq ($(wildcard $(SECRETS_DIR)/env.$(NRO)),)
-include $(SECRETS_DIR)/env.$(NRO)
-endif
-
 # ============================================================================
 
 SED_MATCH ?= [^a-zA-Z0-9._-]
@@ -166,18 +157,8 @@ ifeq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
 endif
 endif
 
-ifeq ($(strip $(RECHARGE_BUCKET_PATH)),)
-	$(error Environment variable RECHARGE_BUCKET_PATH is not set)
-endif
-
 ifeq ($(strip $(NEWRELIC_REST_API_KEY)),)
 	$(error Environment variable NEWRELIC_REST_API_KEY is not set)
-endif
-
-ifeq ($(strip $(NEWRELIC_APP_ID)),)
-ifeq ($(strip $(NEWRELIC_APP_NAME)),)
-	$(error Environment variables NEWRELIC_APP_ID and NEWRELIC_APP_NAME not set: You must set at least one of these variables)
-endif
 endif
 
 ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
