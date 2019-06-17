@@ -124,7 +124,7 @@ $(APP_DIR)/Dockerfile:
 	envsubst '$${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE} $${RECHARGE_PROJECT_ID} $${RECHARGE_BUCKET_NAME}' < $@.in > $@
 
 pull:
-	docker pull ${PARENT_IMAGE}
+	docker pull $(PARENT_IMAGE)
 
 build: lint $(APP_DIR)/.bigqueryrc
 	docker build \
