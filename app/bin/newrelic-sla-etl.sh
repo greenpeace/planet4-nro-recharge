@@ -1,67 +1,49 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-nro="${1:-$RECHARGE_BUCKET_PATH}"
-period="${2:-${RECHARGE_PERIOD}}"
+# Expects Newrelic applixation ID as first parameter
+newrelic_id="$1"
 
-input_file="${3:-$RECHARGE_OUTPUT_FILE}"
+# Expects hostname/path as site unique identifier
+site="$2"
 
-output_dir="$(dirname "$input_file")"
-mkdir -p "$output_dir"
+# Confirm SLA data output file exists
+sla_file="/tmp/sla-$newrelic_id.json"
+[ -e "$sla_file" ] || {
+  >&2 echo "$newrelic_id ✗ ERROR: file not found: $sla_file"
+  exit 1
+}
 
 # ============================================================================
 
 # Application SLA data
 
-echo "Converting NewRelic output to BigQuery table format ..."
-output_file="$output_dir/enduser-$(basename "$input_file")"
+echo "$newrelic_id - Converting NewRelic output to BigQuery table format ..."
+
+output_file="/tmp/etl-$newrelic_id-appdex.json"
 
 # Manipulate data to match BQ schema
 jq -cM \
-  --arg nro "$nro" \
-  --arg period "$period" \
+  --arg site "$site" \
+  --arg period "$RECHARGE_PERIOD" \
   '.metric_data
   | del(.metrics_not_found,.metrics_found)
-  + { period: $period, nro: $nro, from: .from[0:10], to: .to[0:10] }
+  + { period: $period, site: $site, from: .from[0:10], to: .to[0:10] }
   + .metrics[0].timeslices[0].values
-  | del(.metrics)' "$input_file" | tee "$output_file"
-
-# Perform all updates when processing is complete
-if [ "$BATCH_UPLOAD" = "true" ]
-then
-  d=/tmp/batch/newrelic_appdex
-  f="${nro}-${period}-$(jq -r '.to' "${output_file}").json"
-  echo "Moving output file to $d/$f"
-  mkdir -p $d
-  mv "$output_file" "$d/$f"
-else
-  bq-store-single.sh "$output_file" newrelic_appdex
-fi
+  | del(.metrics)' "$sla_file" > "$output_file"
 
 # ============================================================================
 
 # End user SLA data
 
-output_file="$output_dir/enduser-$(basename "$input_file")"
+output_file="/tmp/etl-$newrelic_id-enduser.json"
 
 # Manipulate data to match BQ schema
 jq -cM \
-  --arg nro "$nro" \
-  --arg period "$period" \
+  --arg site "$site" \
+  --arg period "$RECHARGE_PERIOD" \
   '.metric_data
   | del(.metrics_not_found,.metrics_found)
-  + { period: $period, nro: $nro, from: .from[0:10], to: .to[0:10] }
+  + { period: $period, site: $site, from: .from[0:10], to: .to[0:10] }
   + .metrics[1].timeslices[0].values
-  | del(.metrics)' "$input_file" | tee "$output_file"
-
-# Perform all updates when processing is complete
-if [ "$BATCH_UPLOAD" = "true" ]
-then
-  d=/tmp/batch/newrelic_enduser
-  f="${nro}-${period}-$(jq -r '.to' "${output_file}").json"
-  echo "Moving output file to $d/$f"
-  mkdir -p $d
-  mv "$output_file" "$d/$f"
-else
-  bq-store-single.sh "$output_file" newrelic_enduser
-fi
+  | del(.metrics)' "$sla_file" > "$output_file"
