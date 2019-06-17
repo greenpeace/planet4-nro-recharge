@@ -17,6 +17,10 @@ FAST_INIT ?= true
 
 # Version of kubectl to install
 KUBECTL_VERSION ?= 1.14.0
+
+# Default period for ETL
+RECHARGE_PERIOD ?= month
+
 # Set default dataset for testing
 ifeq ($(strip $(RECHARGE_BQ_DATASET)),)
 RECHARGE_BQ_DATASET := recharge_test
@@ -183,6 +187,10 @@ endif
 		-e "NEWRELIC_APP_ID=$(NEWRELIC_APP_ID)" \
 		-e "RECHARGE_BUCKET_PATH=$(RECHARGE_BUCKET_PATH)" \
 		-e 'RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))' \
+		-e "RECHARGE_PERIOD=$(RECHARGE_PERIOD)" \
+		-e "RECHARGE_PERIOD_DAY=$(RECHARGE_PERIOD_DAY)" \
+		-e "RECHARGE_PERIOD_MONTH=$(RECHARGE_PERIOD_MONTH)" \
+		-e "RECHARGE_PERIOD_YEAR=$(RECHARGE_PERIOD_YEAR)" \
 		$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM)
 
 test-clean:
