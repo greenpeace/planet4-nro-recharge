@@ -121,7 +121,7 @@ $(APP_DIR)/.bigqueryrc:
 	envsubst '$${RECHARGE_PROJECT_ID}' < $@.in > $@
 
 $(APP_DIR)/Dockerfile:
-	envsubst '$${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE} $${RECHARGE_PROJECT_ID} $${RECHARGE_BUCKET_NAME}' < $@.in > $@
+	envsubst '$${KUBECTL_VERSION} $${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE} $${RECHARGE_PROJECT_ID} $${RECHARGE_BUCKET_NAME}' < $@.in > $@
 
 pull:
 	docker pull $(PARENT_IMAGE)
