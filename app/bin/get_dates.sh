@@ -1,7 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -euo pipefail
-
-echo "Period: ${RECHARGE_PERIOD}"
 
 case $RECHARGE_PERIOD in
 	day)
