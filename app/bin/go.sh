@@ -54,7 +54,7 @@ echo "========================================================================="
 echo
 
 # Extract, transform, load NewRelic SLA data to BigQuery
-go-bucket.sh
+go-newrelic.sh
 
 echo
 echo "========================================================================="
