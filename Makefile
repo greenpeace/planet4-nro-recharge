@@ -184,7 +184,12 @@ ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
 	$(warning *** Using test dataset: RECHARGE_BQ_DATASET=recharge_test ***)
 endif
 
+ifneq ($(strip $(FORCE_RECREATE_ID)),)
+	$(warning *** Recreating all appliation ID files! ***)
+endif
+
 	docker run --name recharge-test --rm \
+		-e "FORCE_RECREATE_ID=$(FORCE_RECREATE_ID)" \
 		-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
 		-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 		-e "NEWRELIC_APP_ID=$(NEWRELIC_APP_ID)" \
@@ -215,9 +220,14 @@ endif
 ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
 	$(warning *** Using test dataset: RECHARGE_BQ_DATASET=recharge_test ***)
 endif
+
+ifneq ($(strip $(FORCE_RECREATE_ID)),)
+	$(warning *** Recreating all appliation ID files! ***)
+endif
 		docker run --name recharge-test --rm -ti \
 			-v "$(PWD)/batch:/tmp/batch" \
 			-v "$(PWD)/bucket:/tmp/bucket" \
+			-e "FORCE_RECREATE_ID=$(FORCE_RECREATE_ID)" \
 			-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
 			-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 			-e 'RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))' \
