@@ -19,11 +19,14 @@ case "$yn" in
     * ) : ;;
 esac
 
-# Create tables
-init-bq.sh &
+# Initialise bucket and dataset, unless FAST_INIT is set to 'true'
+[[ "${FAST_INIT}" = true ]] || {
+  # Ensures the bucket for storing data exists
+  init-gcs.sh
 
-# Synchronise GCS SLA bucket to local directory
-retry gsutil -m rsync -d -r "gs://${RECHARGE_BUCKET_NAME}" "/tmp/bucket" &
+  # Ensures the bucket for storing data exists
+  init-bq.sh
+}
 
 wait
 

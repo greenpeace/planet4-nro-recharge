@@ -172,6 +172,7 @@ endif
 	docker run --name recharge-test --rm \
 		-v "$(PWD)/batch:/tmp/batch" \
 		-v "$(PWD)/bucket:/tmp/bucket" \
+		-e "FAST_INIT=$(FAST_INIT)" \
 		-e "FORCE_RECREATE_ID=$(FORCE_RECREATE_ID)" \
 		-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
 		-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
@@ -210,6 +211,7 @@ endif
 		docker run --name recharge-test --rm -ti \
 			-v "$(PWD)/batch:/tmp/batch" \
 			-v "$(PWD)/bucket:/tmp/bucket" \
+			-e "FAST_INIT=$(FAST_INIT)" \
 			-e "FORCE_RECREATE_ID=$(FORCE_RECREATE_ID)" \
 			-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
 			-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
