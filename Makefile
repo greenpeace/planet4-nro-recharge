@@ -12,21 +12,24 @@ RECHARGE_PROJECT_ID ?= planet4-production
 RECHARGE_BUCKET_NAME ?= p4-nro-recharge
 RECHARGE_SERVICE_KEY_FILE := gcloud-service-key.json
 
+# If FAST_INIT is true, don't recreate all buckets/datasets
+FAST_INIT ?= true
+
+# Use Docker buildkit?
+DOCKER_BUILDKIT ?= 1
+
+# Version of kubectl to install
+KUBECTL_VERSION ?= 1.14.0
+
+# Default period for ETL
+RECHARGE_PERIOD ?= month
+
 # Set default dataset for testing
 ifeq ($(strip $(RECHARGE_BQ_DATASET)),)
 RECHARGE_BQ_DATASET := recharge_test
 endif
 
 SECRETS_DIR := secrets
-
-# convert NRO name to lowercase, remove punctuation, replace space with hyphen
-ifneq ($(wildcard APP_PATH),)
-NRO ?= $(shell cat APP_PATH)
-endif
-
-ifneq ($(wildcard $(SECRETS_DIR)/env.$(NRO)),)
-include $(SECRETS_DIR)/env.$(NRO)
-endif
 
 # ============================================================================
 
@@ -76,6 +79,8 @@ init: .git/hooks/pre-commit
 	@find .git/hooks -type l -exec rm {} \;
 	@find .githooks -type f -exec ln -sf ../../{} .git/hooks/ \;
 
+# ============================================================================
+
 clean:
 	@$(MAKE) -sj clean-dockerfile clean-bigqueryrc
 
@@ -93,6 +98,8 @@ ifneq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
 	rm $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)
 endif
 
+# ============================================================================
+
 lint: lint-sh lint-yaml lint-docker
 
 lint-sh:
@@ -108,14 +115,16 @@ ifndef DOCKER
 endif
 	@docker run --rm -i hadolint/hadolint < $(APP_DIR)/Dockerfile
 
+#	============================================================================
+
 $(APP_DIR)/.bigqueryrc:
 	envsubst '$${RECHARGE_PROJECT_ID}' < $@.in > $@
 
 $(APP_DIR)/Dockerfile:
-	envsubst '$${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE} $${RECHARGE_PROJECT_ID} $${RECHARGE_BUCKET_NAME}' < $@.in > $@
+	envsubst '$${KUBECTL_VERSION} $${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE} $${RECHARGE_PROJECT_ID} $${RECHARGE_BUCKET_NAME}' < $@.in > $@
 
 pull:
-	docker pull ${PARENT_IMAGE}
+	docker pull $(PARENT_IMAGE)
 
 build: lint $(APP_DIR)/.bigqueryrc
 	docker build \
@@ -137,6 +146,8 @@ push-latest:
 		echo "Not tagged.. skipping latest"; \
 	} fi
 
+#	============================================================================
+
 test: test-run test-clean
 
 test-run:
@@ -146,34 +157,38 @@ ifeq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
 endif
 endif
 
-ifeq ($(strip $(RECHARGE_BUCKET_PATH)),)
-	$(error Environment variable RECHARGE_BUCKET_PATH is not set)
-endif
-
 ifeq ($(strip $(NEWRELIC_REST_API_KEY)),)
 	$(error Environment variable NEWRELIC_REST_API_KEY is not set)
-endif
-
-ifeq ($(strip $(NEWRELIC_APP_ID)),)
-ifeq ($(strip $(NEWRELIC_APP_NAME)),)
-	$(error Environment variables NEWRELIC_APP_ID and NEWRELIC_APP_NAME not set: You must set at least one of these variables)
-endif
 endif
 
 ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
 	$(warning *** Using test dataset: RECHARGE_BQ_DATASET=recharge_test ***)
 endif
 
-	docker run --rm \
+ifneq ($(strip $(FORCE_RECREATE_ID)),)
+	$(warning *** Recreating all appliation ID files! ***)
+endif
+
+	docker run --name recharge-test --rm \
+		-v "$(PWD)/batch:/tmp/batch" \
+		-v "$(PWD)/bucket:/tmp/bucket" \
+		-e "FAST_INIT=$(FAST_INIT)" \
+		-e "FORCE_RECREATE_ID=$(FORCE_RECREATE_ID)" \
 		-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
 		-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 		-e "NEWRELIC_APP_ID=$(NEWRELIC_APP_ID)" \
 		-e "RECHARGE_BUCKET_PATH=$(RECHARGE_BUCKET_PATH)" \
 		-e 'RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))' \
+		-e "RECHARGE_PERIOD=$(RECHARGE_PERIOD)" \
+		-e "RECHARGE_PERIOD_DAY=$(RECHARGE_PERIOD_DAY)" \
+		-e "RECHARGE_PERIOD_MONTH=$(RECHARGE_PERIOD_MONTH)" \
+		-e "RECHARGE_PERIOD_YEAR=$(RECHARGE_PERIOD_YEAR)" \
 		$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM)
 
 test-clean:
 	$(warning Not yet implemented. @TODO delete testing bucket and bq data)
+
+#	============================================================================
 
 rebuild-dataset: # Recreates the entire dataset with values from GCS bucekt
 ifeq ($(strip $(NEWRELIC_REST_API_KEY)),)
@@ -189,9 +204,15 @@ endif
 ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
 	$(warning *** Using test dataset: RECHARGE_BQ_DATASET=recharge_test ***)
 endif
-		docker run --rm -ti \
+
+ifneq ($(strip $(FORCE_RECREATE_ID)),)
+	$(warning *** Recreating all appliation ID files! ***)
+endif
+		docker run --name recharge-test --rm -ti \
 			-v "$(PWD)/batch:/tmp/batch" \
 			-v "$(PWD)/bucket:/tmp/bucket" \
+			-e "FAST_INIT=$(FAST_INIT)" \
+			-e "FORCE_RECREATE_ID=$(FORCE_RECREATE_ID)" \
 			-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
 			-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 			-e 'RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))' \

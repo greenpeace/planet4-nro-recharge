@@ -21,7 +21,7 @@
   "name": "period"
 }, {
   "type": "STRING",
-  "name": "nro"
+  "name": "site"
 }, {
   "type": "FLOAT",
   "name": "score",

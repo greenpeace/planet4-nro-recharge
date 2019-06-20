@@ -17,12 +17,12 @@ file=${1:-/app/${RECHARGE_SERVICE_KEY_FILE}}
 # The working project id may different to the key project_id
 if [ -z "${RECHARGE_PROJECT_ID:-}" ]
 then
-  # Default to service account project
+  # Default to projectID defined in service account json
   >&2 echo "WARNING: RECHARGE_PROJECT_ID not set, reading from file"
   RECHARGE_PROJECT_ID=$(jq -r .project_id "$file")
 fi
 
-# Configure project
+# Set working project
 gcloud config set project "${RECHARGE_PROJECT_ID}"
 
 # Authenticate

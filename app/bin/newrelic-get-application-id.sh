@@ -10,4 +10,4 @@ appname=$(tr ' ' '+' <<< "${1:-${NEWRELIC_APP_NAME}}")
 
 curl -s -X GET "https://api.newrelic.com/v2/applications.json" \
      -H "X-Api-Key:${NEWRELIC_REST_API_KEY}" \
-     -G -d "filter[name]=${appname}" | jq ".applications[].id"
+     -G -d "filter[name]=${appname}&exclude_links=true" | jq ".applications[].id"

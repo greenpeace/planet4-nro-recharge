@@ -7,6 +7,9 @@ RUN apk add --no-cache \
   curl \
   jq
 
+RUN curl -L "https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl && \
+  chmod 755 /usr/local/bin/kubectl
+
 WORKDIR /app
 
 ENTRYPOINT ["entrypoint.sh"]
@@ -14,7 +17,8 @@ ENTRYPOINT ["entrypoint.sh"]
 CMD ["go.sh"]
 
 ENV \
-  BATCH_UPLOAD="true" \
+  FAST_INIT="1" \
+  FORCE_RECREATE_ID="" \
   BIGQUERYRC="/app/.bigqueryrc" \
   NEWRELIC_APP_ID="" \
   NEWRELIC_APP_NAME="" \
@@ -24,7 +28,6 @@ ENV \
   RECHARGE_BUCKET_LOCATION="us" \
   RECHARGE_BUCKET_NAME="${RECHARGE_BUCKET_NAME}" \
   RECHARGE_BUCKET_PATH="" \
-  RECHARGE_OUTPUT_FILE="/tmp/sla.json" \
   RECHARGE_PERIOD_DAY="" \
   RECHARGE_PERIOD_MONTH="" \
   RECHARGE_PERIOD_YEAR="" \
@@ -32,7 +35,6 @@ ENV \
   RECHARGE_PROJECT_ID="${RECHARGE_PROJECT_ID}" \
   RECHARGE_SERVICE_KEY="" \
   RECHARGE_SERVICE_KEY_FILE="${RECHARGE_SERVICE_KEY_FILE}" \
-  SCHEMA_VERSION="5" \
-  USAGE_BUCKET_NAME="p4-gcs-usage"
+  SCHEMA_VERSION="1"
 
 COPY . /app
