@@ -25,6 +25,7 @@ done
 activate-service-account.sh
 
 # This is fine. It's fine. Everything's fine.
+rm -fr /tmp/batch/* || true
 rm -fr /tmp/batch || true
 mkdir -p /tmp/batch || true
 
@@ -44,131 +45,117 @@ esac
   init-bq.sh
 }
 
-wait
+# Synchronise GCS SLA bucket to local directory
+echo
+echo " ************** DEBUG ************"
+echo "      DISABLED BUCKET SYNC"
+echo
+# retry gsutil -m rsync -d -r "gs://${RECHARGE_BUCKET_NAME}" "/tmp/bucket"
 
 pushd "/tmp/bucket" > /dev/null
 
-echo
-echo " ==="
-echo
-today=$(date -d 'now' +%s)
+today=$(date +%Y-%m-%d)
 
-for bucket in *
+# For each subdirectory
+for year in "${years[@]}"
 do
+  echo " 1. ${year:0:4} ..."
+  echo " 2. ${today:0:4} ..."
 
-  # Not a dir? ignore
-  [ -d "$bucket" ] || continue
+  for month in "${months[@]}"
+  do
+    todate=$(date -d "${year}-${month}-01" +%s)
+    cond=$(date -d "$today" +%s)
 
-  # Do we have the application id?
-  [ -e "$bucket/id.json" ] && {
-    # Store for later use
-    app_id=$(jq -r '.newrelic_id' "$bucket/id.json")
-
-    [ -z "$app_id" ] && {
-      >&2 echo "WARNING: app_id is blank! FIXME Seymour!"
+    (( "$todate" > "$cond" )) && {
+      >&2 echo "Month $year-$month is in the future, skipping ..."
       continue
     }
-  }
-
-  # Prepare folders
-  # FIXME: Hack!! Generate year range programmatically
-  years=(2018 2019 2020 2021 2022 2023 2024 2025 2026 2027 2028 2029 2030 2031 2032 2033 2034 2035 2036 2037 2038 2039)
-  months=(01 02 03 04 05 06 07 08 09 10 11 12)
-  for y in "${years[@]}"
-  do
-    for m in "${months[@]}"
-    do
-      [[ "$(date -d "$y-$m-01" +%s)" -ge "$today" ]] || mkdir -p "$bucket/sla/$y/$m"
-    done
-  done
-
-  for year in "$bucket"/sla/*
-  do
-    # Not a dir? ignore
-    [ -d "$year" ] || continue
-
-    # isNumeric
-    [[ ${year: -4} =~ ^[0-9]+$ ]] || continue
 
     echo
     echo "=================================================================="
     echo
-    echo " > $year"
+    echo " > $year/$month"
     echo
 
-    # Get SLA data for year
-    RECHARGE_PERIOD=year \
-    RECHARGE_PERIOD_YEAR=${year: -4} \
+    # Get SLA data for month
+    RECHARGE_PERIOD="month"
+    export RECHARGE_PERIOD
+
+    RECHARGE_PERIOD_MONTH="${year: -4}-${month: -2}" \
     . /app/bin/get_dates.sh
 
-    retry newrelic-sla-get.sh "$app_id"
+    go-newrelic.sh
 
-    [ -e "${RECHARGE_OUTPUT_FILE}" ] && {
-      mv "${RECHARGE_OUTPUT_FILE}" "$year/newrelic-sla.json"
-      retry newrelic-sla-etl.sh "$bucket" "year" "$year/newrelic-sla.json"
-    }
+    # for day in "$month"/*
+    # do
+    #   echo "$day ..."
+    #
+    #   echo "skipping day data ..."
+    #   continue
+    #
+    #   # Not a dir? ignore
+    #   [ -d "$day" ] || continue
+    #
+    #   # isNumeric
+    #   [[ ${day: -2} =~ ^[0-9]+$ ]] || continue
+    #
+    #   echo
+    #   echo "=================================================================="
+    #   echo
+    #   echo " > $day"
+    #   echo
+    #   # Get SLA data for day
+    #   RECHARGE_PERIOD=day \
+    #   RECHARGE_PERIOD_DAY="${year: -4}-${month: -2}-${day: -2}" \
+    #   . /app/bin/get_dates.sh
+    #
+    #   if ! retry newrelic-sla-get.sh "$app_id"
+    #   then
+    #     echo "WARNING: could not fetch NewRelic SLA data for $bucket"
+    #     continue
+    #   fi
+    #
+    #   [ -e "${RECHARGE_OUTPUT_FILE}" ] && {
+    #     mv "${RECHARGE_OUTPUT_FILE}" "$day/newrelic-sla.json"
+    #     # Upload SLA data for day
+    #     retry newrelic-sla-etl.sh "$bucket" "day" "$day/newrelic-sla.json"
+    #   }
+    #
+    # done # end day
+  done # end month
 
-    for month in "$year"/*
-    do
-      # Not a dir? ignore
-      [ -d "$month" ] || continue
+  echo
+  echo "=================================================================="
+  echo
+  echo " > $year"
+  echo
 
-      # isNumeric
-      [[ ${month: -2} =~ ^[0-9]+$ ]] || continue
-      echo
-      echo "=================================================================="
-      echo
-      echo " > $month"
-      echo
 
-      # Get SLA data for month
-      RECHARGE_PERIOD=month \
-      RECHARGE_PERIOD_MONTH="${year: -4}-${month: -2}" \
-      . /app/bin/get_dates.sh
+  # isFuture?
+  (( ${year:0:4} >= ${today:0:4} )) && {
+    >&2 echo "Year $year is in the future, skipping ..."
+    continue
+  }
 
-      retry newrelic-sla-get.sh "$app_id"
+  # Get SLA data for year
+  RECHARGE_PERIOD="year"
+  export RECHARGE_PERIOD
 
-      [ -e "${RECHARGE_OUTPUT_FILE}" ] && {
-        mv "${RECHARGE_OUTPUT_FILE}" "$month/newrelic-sla.json"
-        # Upload SLA data for month
-        retry newrelic-sla-etl.sh "$bucket" "month" "$month/newrelic-sla.json"
-      }
+  RECHARGE_PERIOD_YEAR=${year: -4} \
+  . /app/bin/get_dates.sh
 
-      for day in "$month"/*
-      do
-        # Not a dir? ignore
-        [ -d "$day" ] || continue
+  retry go-newrelic.sh
 
-        # isNumeric
-        [[ ${day: -2} =~ ^[0-9]+$ ]] || continue
+done # end year
 
-        echo
-        echo "=================================================================="
-        echo
-        echo " > $day"
-        echo
-        # Get SLA data for day
-        RECHARGE_PERIOD=day \
-        RECHARGE_PERIOD_DAY="${year: -4}-${month: -2}-${day: -2}" \
-        . /app/bin/get_dates.sh
+echo
+echo " ************** DEBUG ************"
+echo "      DISABLED BUCKET SYNC"
+echo
+# retry gsutil -m rsync -d -r "/tmp/bucket" "gs://${RECHARGE_BUCKET_NAME}" &
 
-        retry newrelic-sla-get.sh "$app_id"
-        [ -e "${RECHARGE_OUTPUT_FILE}" ] && {
-          mv "${RECHARGE_OUTPUT_FILE}" "$day/newrelic-sla.json"
-          # Upload SLA data for day
-          retry newrelic-sla-etl.sh "$bucket" "day" "$day/newrelic-sla.json"
-        }
-
-      done
-    done
-  done
-done
-
-retry gsutil -m rsync -d -r "/tmp/bucket" "gs://${RECHARGE_BUCKET_NAME}" &
-
-bq-store-batch.sh &
-
-wait
+bq-store-batch.sh
 
 echo "Done"
 date
