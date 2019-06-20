@@ -2,6 +2,22 @@
 # shellcheck disable=SC1091
 set -euo pipefail
 
+months=(01 02 03 04 05 06 07 08 09 10 11 12)
+# Initial data gathering from 2018
+years=(2018)
+
+# Begin
+nextyear=$(date +%Y)
+
+while
+    years+=("$nextyear")
+    thisyear="$nextyear"
+    nextyear=$(( nextyear + 1 ))
+    (( "$nextyear" <= "$thisyear" ))
+do
+    :
+done
+
 # shellcheck disable=SC1091
 . /app/bin/retry.sh
 
