@@ -5,9 +5,9 @@ set -euo pipefail
 ## Determine NewRelic application ID from name if not set
 if [ -z "${NEWRELIC_APP_ID}" ] && [ -n "${NEWRELIC_APP_NAME}" ]
 then
+  NEWRELIC_APP_ID=$(newrelic-get-application-id.sh)
   echo "NEWRELIC_APP_ID: $NEWRELIC_APP_ID"
   echo "NEWRELIC_APP_NAME: $NEWRELIC_APP_NAME"
-  NEWRELIC_APP_ID=$(newrelic-get-application-id.sh)
 fi
 
 if [ -z "$NEWRELIC_APP_ID" ]
