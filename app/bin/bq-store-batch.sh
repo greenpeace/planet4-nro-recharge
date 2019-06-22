@@ -6,6 +6,8 @@ tables=(
   enduser
 )
 
+mkdir -p /tmp/batch/
+
 for t in "${tables[@]}"
 do
   # Concatonate files
