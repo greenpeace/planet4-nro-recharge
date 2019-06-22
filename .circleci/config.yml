@@ -51,17 +51,10 @@ workflows:
           filters:
             branches:
               ignore: master
-      - hold:
-          type: approval
-          requires:
-            - build-push
-          filters:
-            branches:
-              only: develop
       - promote:
           context: org-global
           requires:
-            - hold
+            - build-push
           filters:
             branches:
               only: develop
