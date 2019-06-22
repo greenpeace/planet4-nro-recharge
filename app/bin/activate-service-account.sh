@@ -22,8 +22,8 @@ then
   RECHARGE_PROJECT_ID=$(jq -r .project_id "$file")
 fi
 
-# Set working project
-gcloud config set project "${RECHARGE_PROJECT_ID}"
-
 # Authenticate
 gcloud auth activate-service-account --key-file "$file"
+
+# Set working project
+gcloud config set project "${RECHARGE_PROJECT_ID}"
