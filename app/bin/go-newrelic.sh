@@ -22,12 +22,12 @@ function main() {
 function get_applications() {
   # If NEWRELIC_APP_ID is not blank
 
-    # NOT HELPING JAN ... Fetch Newrelic applications by label
-    # Deprecated as there's no easy way to get domain/path from Newrelic
-    # Thus no way to create unique identifier
-    # newrelic-get-apps-by-label.sh
+  # NOT HELPING JAN ... Fetch Newrelic applications by label
+  # Deprecated as there's no easy way to get domain/path from Newrelic
+  # Thus no way to create unique identifier
+  # newrelic-get-apps-by-label.sh
 
-    # Fetch NewRelic application IDs from id.json
+  # Fetch NewRelic application IDs from id.json
 
   while IFS= read -r -d '' file
   do
