@@ -10,6 +10,8 @@ RUN apk add --no-cache \
 RUN curl -L "https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl && \
   chmod 755 /usr/local/bin/kubectl
 
+RUN mkdir -p /tmp/bucket
+
 WORKDIR /app
 
 ENTRYPOINT ["entrypoint.sh"]
@@ -17,7 +19,7 @@ ENTRYPOINT ["entrypoint.sh"]
 CMD ["go.sh"]
 
 ENV \
-  FAST_INIT="1" \
+  FAST_INIT="true" \
   FORCE_RECREATE_ID="" \
   BIGQUERYRC="/app/.bigqueryrc" \
   NEWRELIC_APP_ID="" \
