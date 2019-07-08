@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo "Confirm BigQuery dataset '$RECHARGE_BQ_DATASET' exists ..."
 bq ls "$RECHARGE_BQ_DATASET" || {
   echo " > bq: Creating new dataset: ${RECHARGE_BQ_DATASET}"
   bq mk "$RECHARGE_BQ_DATASET"

@@ -47,3 +47,5 @@ jq -cM \
   + { period: $period, site: $site, from: .from[0:10], to: .to[0:10] }
   + .metrics[1].timeslices[0].values
   | del(.metrics)' "$sla_file" > "$output_file"
+
+echo "$newrelic_id ✓ BQ data uploaded"
