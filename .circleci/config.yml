@@ -109,7 +109,7 @@ workflows:
           context: org-global
     triggers:
       - schedule:
-          cron: "3,13,23,33,43,53 * * * *"
+          cron: "5 2 * * *"
           filters:
             branches:
               only:
