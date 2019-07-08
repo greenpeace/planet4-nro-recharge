@@ -42,7 +42,11 @@ function get_recharge_ids() {
 
   ifs=$IFS
   IFS=$'\n'
+  echo
+  echo "=================================================================="
+  echo
   echo "Creating application id files:"
+  echo
   for deployment in $(kubectl get deployment -l app=planet4,environment=production,component=php --all-namespaces -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | tail -n+2)
   do
     create_application_id_file "$deployment" &
@@ -127,3 +131,7 @@ retry create_recharge_bucket
 
 echo "Initialise identifier JSON ..."
 retry get_recharge_ids
+
+echo
+echo "=================================================================="
+echo

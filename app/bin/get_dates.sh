@@ -64,6 +64,7 @@ case $RECHARGE_PERIOD in
 
 echo "From:   ${DATE_START}"
 echo "To:     ${DATE_END}"
+echo
 
 export DATE_START
 export DATE_END

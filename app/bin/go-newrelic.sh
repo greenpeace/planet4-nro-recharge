@@ -14,18 +14,10 @@ function main() {
   done
 
   wait
-
-  # Store transformed data in BigQuery
-  bq-store-batch.sh
 }
 
 function get_applications() {
   # If NEWRELIC_APP_ID is not blank
-
-  # NOT HELPING JAN ... Fetch Newrelic applications by label
-  # Deprecated as there's no easy way to get domain/path from Newrelic
-  # Thus no way to create unique identifier
-  # newrelic-get-apps-by-label.sh
 
   # Fetch NewRelic application IDs from id.json
 
@@ -76,7 +68,7 @@ function queue_application() {
   newrelic-sla-get.sh "$newrelic_id"
 
   # Stores SLA data in bucket
-  newrelic-sla-upload.sh "$newrelic_id" "$app_domain/$app_path"
+  # newrelic-sla-upload.sh "$newrelic_id" "$app_domain/$app_path"
 
   # Transform NewRelic data to BigQuery table format
   newrelic-sla-etl.sh "$newrelic_id" "$app_domain/$app_path"

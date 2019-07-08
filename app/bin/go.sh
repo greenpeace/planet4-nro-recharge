@@ -51,13 +51,9 @@ echo
 # Extract, transform, load NewRelic SLA data to BigQuery
 go-newrelic.sh
 
-echo
-echo "========================================================================="
-echo
+bq-store-batch.sh
 
-# Extract, transform, load NewRelic SLA data to BigQuery
-go-akamai.sh
-
+# Synchronise local changes with GCS bucket
 gsutil -m rsync -d -r /tmp/bucket "gs://${RECHARGE_BUCKET_NAME}"
 
 echo "OK"

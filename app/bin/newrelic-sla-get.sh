@@ -27,12 +27,14 @@ echo "$app_id - Fetching NewRelic SLA data ..."
 echo "$app_id - App:    https://rpm.newrelic.com/accounts/301342/applications/$app_id"
 echo "$app_id - Dates:  $range"
 
+outfile="/tmp/sla-$RECHARGE_PERIOD-${end}-${app_id}.json"
+
 curl -s -X GET "https://api.newrelic.com/v2/applications/$app_id/metrics/data.json" \
      -H "X-Api-Key:$NEWRELIC_REST_API_KEY" \
-     -d "names[]=Apdex&names[]=EndUser/Apdex&$range&summarize=true" -o "/tmp/sla-$app_id.json"
+     -d "names[]=Apdex&names[]=EndUser/Apdex&$range&summarize=true" -o "$outfile"
 
-jq -e '.error' "/tmp/sla-$app_id.json" > /dev/null && {
-  >&2 echo "$app_id ✗ ERROR: NewRelic API said: $(jq '.error.title' "/tmp/sla-$app_id.json")"
+jq -e '.error' "$outfile" > /dev/null && {
+  >&2 echo "$app_id ✗ ERROR: NewRelic API said: $(jq '.error.title' "$outfile")"
   echo
   exit 1
 }
