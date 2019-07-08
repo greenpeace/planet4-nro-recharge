@@ -16,9 +16,10 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - checkout
+      - run: make lint
       - run: make clean pull build
       - run: activate-gcloud-account.sh
-      - run: gcloud auth configure-docker
+      - run: docker-login.sh
       - run: |
           mkdir -p /tmp/workspace/var
           echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
@@ -41,6 +42,39 @@ jobs:
             echo "Promoting branch ${CIRCLE_BRANCH} to ${new_version}"
             release-start.sh $new_version
             release-finish.sh $new_version
+
+  daily:
+    docker:
+      image: greenpeaceinternational/p4-nro-recharge:latest
+    environment:
+      RECHARGE_PERIOD: day
+    steps:
+      - run: go.sh
+
+  monthly:
+    docker:
+      image: greenpeaceinternational/p4-nro-recharge:latest
+    environment:
+      RECHARGE_PERIOD: month
+    steps:
+      - run: go.sh
+
+  yearly:
+    docker:
+      image: greenpeaceinternational/p4-nro-recharge:latest
+    environment:
+      RECHARGE_PERIOD: year
+    steps:
+      - run: go.sh
+
+  refresh-id-files:
+    docker:
+      image: greenpeaceinternational/p4-nro-recharge:latest
+    environment:
+      FORCE_RECREATE_ID: true
+    steps:
+      - run: init-gcs.sh
+      - run: gsutil -m rsync -d -r /tmp/bucket "gs://${RECHARGE_BUCKET_NAME}"
 
 workflows:
   version: 2
@@ -68,3 +102,27 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v.*/
+
+  daily:
+    jobs:
+      - daily:
+          context: org-global
+    triggers:
+      - schedule:
+          cron: "*/5 * * * *"
+
+  monthly:
+    jobs:
+      - monthly:
+          context: org-global
+    triggers:
+      - schedule:
+          cron: "11 3 2 * *"
+
+  yearly:
+    jobs:
+      - monthly:
+          context: org-global
+    triggers:
+      - schedule:
+          cron: "33 3 2 1 *"

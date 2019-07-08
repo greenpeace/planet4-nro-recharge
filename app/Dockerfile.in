@@ -19,7 +19,8 @@ ENTRYPOINT ["entrypoint.sh"]
 CMD ["go.sh"]
 
 ENV \
-  FAST_INIT="true" \
+  APP_VERSION="${BUILD_TAG}" \
+  FAST_INIT="" \
   FORCE_RECREATE_ID="" \
   BIGQUERYRC="/app/.bigqueryrc" \
   NEWRELIC_APP_ID="" \

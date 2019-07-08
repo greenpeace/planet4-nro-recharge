@@ -2,8 +2,7 @@ SHELL := /bin/bash
 
 .EXPORT_ALL_VARIABLES:
 
-BUILD_NAMESPACE ?= gcr.io
-BUILD_PROJECT ?= planet-4-151612
+BUILD_NAMESPACE ?= greenpeaceinternational
 BUILD_IMAGE ?= p4-nro-recharge
 
 PARENT_IMAGE ?= google/cloud-sdk:alpine
@@ -121,27 +120,27 @@ $(APP_DIR)/.bigqueryrc:
 	envsubst '$${RECHARGE_PROJECT_ID}' < $@.in > $@
 
 $(APP_DIR)/Dockerfile:
-	envsubst '$${KUBECTL_VERSION} $${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE} $${RECHARGE_PROJECT_ID} $${RECHARGE_BUCKET_NAME}' < $@.in > $@
+	envsubst '$${BUILD_TAG} $${KUBECTL_VERSION} $${PARENT_IMAGE} $${RECHARGE_SERVICE_KEY_FILE} $${RECHARGE_PROJECT_ID} $${RECHARGE_BUCKET_NAME}' < $@.in > $@
 
 pull:
 	docker pull $(PARENT_IMAGE)
 
 build: lint $(APP_DIR)/.bigqueryrc
 	docker build \
-		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
-		-t $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(BUILD_TAG) \
+		-t $(BUILD_NAMESPACE)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
+		-t $(BUILD_NAMESPACE)/$(BUILD_IMAGE):$(BUILD_TAG) \
 		$(APP_DIR)
 
 push: push-tag push-latest
 
 push-tag:
-	docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):$(BUILD_TAG)
-	docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM)
+	docker push $(BUILD_NAMESPACE)/$(BUILD_IMAGE):$(BUILD_TAG)
+	docker push $(BUILD_NAMESPACE)/$(BUILD_IMAGE):build-$(BUILD_NUM)
 
 push-latest:
 	@if [[ "$(PUSH_LATEST)" = "true" ]]; then { \
-		docker tag $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):latest; \
-		docker push $(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):latest; \
+		docker tag $(BUILD_NAMESPACE)/$(BUILD_IMAGE):build-$(BUILD_NUM) $(BUILD_NAMESPACE)/$(BUILD_IMAGE):latest; \
+		docker push $(BUILD_NAMESPACE)/$(BUILD_IMAGE):latest; \
 	}	else { \
 		echo "Not tagged.. skipping latest"; \
 	} fi
@@ -153,7 +152,7 @@ test: test-run test-clean
 test-run:
 ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
 ifeq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
-	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(RECHARGE_SERVICE_KEY_FILE) file does not exist)
+	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE) file does not exist)
 endif
 endif
 
@@ -169,9 +168,7 @@ ifneq ($(strip $(FORCE_RECREATE_ID)),)
 	$(warning *** Recreating all appliation ID files! ***)
 endif
 
-	docker run --name recharge-test --rm \
-		-v "$(PWD)/batch:/tmp/batch" \
-		-v "$(PWD)/bucket:/tmp/bucket" \
+	time docker run --name recharge-test --rm \
 		-e "FAST_INIT=$(FAST_INIT)" \
 		-e "FORCE_RECREATE_ID=$(FORCE_RECREATE_ID)" \
 		-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
@@ -184,7 +181,7 @@ endif
 		-e "RECHARGE_PERIOD_DAY=$(RECHARGE_PERIOD_DAY)" \
 		-e "RECHARGE_PERIOD_MONTH=$(RECHARGE_PERIOD_MONTH)" \
 		-e "RECHARGE_PERIOD_YEAR=$(RECHARGE_PERIOD_YEAR)" \
-		$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM)
+		$(BUILD_NAMESPACE)/$(BUILD_IMAGE):build-$(BUILD_NUM)
 
 test-clean:
 	$(warning Not yet implemented. @TODO delete testing bucket and bq data)
@@ -209,13 +206,11 @@ endif
 ifneq ($(strip $(FORCE_RECREATE_ID)),)
 	$(warning *** Recreating all appliation ID files! ***)
 endif
-		docker run --name recharge-test --rm -ti \
-			-v "$(PWD)/batch:/tmp/batch" \
-			-v "$(PWD)/bucket:/tmp/bucket" \
+		time docker run --name recharge-test --rm -ti \
 			-e "FAST_INIT=$(FAST_INIT)" \
 			-e "FORCE_RECREATE_ID=$(FORCE_RECREATE_ID)" \
 			-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
 			-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 			-e 'RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE))' \
-			$(BUILD_NAMESPACE)/$(BUILD_PROJECT)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
+			$(BUILD_NAMESPACE)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
 			rebuild-dataset.sh
