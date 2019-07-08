@@ -99,7 +99,8 @@ endif
 
 # ============================================================================
 
-lint: lint-sh lint-yaml lint-docker
+lint:
+	$(MAKE) -j lint-sh lint-yaml lint-docker lint-ci
 
 lint-sh:
 	@shellcheck configure
@@ -107,6 +108,9 @@ lint-sh:
 
 lint-yaml:
 	@find . -type f -name '*.yml' | xargs yamllint
+
+lint-ci:
+	yamllint .circleci/config.yml
 
 lint-docker: $(APP_DIR)/Dockerfile
 ifndef DOCKER
