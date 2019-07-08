@@ -45,7 +45,7 @@ jobs:
 
   daily:
     docker:
-      image: greenpeaceinternational/p4-nro-recharge:latest
+      - image: greenpeaceinternational/p4-nro-recharge:latest
     environment:
       RECHARGE_PERIOD: day
     steps:
@@ -53,7 +53,7 @@ jobs:
 
   monthly:
     docker:
-      image: greenpeaceinternational/p4-nro-recharge:latest
+      - image: greenpeaceinternational/p4-nro-recharge:latest
     environment:
       RECHARGE_PERIOD: month
     steps:
@@ -61,7 +61,7 @@ jobs:
 
   yearly:
     docker:
-      image: greenpeaceinternational/p4-nro-recharge:latest
+      - image: greenpeaceinternational/p4-nro-recharge:latest
     environment:
       RECHARGE_PERIOD: year
     steps:
@@ -69,7 +69,7 @@ jobs:
 
   refresh-id-files:
     docker:
-      image: greenpeaceinternational/p4-nro-recharge:latest
+      - image: greenpeaceinternational/p4-nro-recharge:latest
     environment:
       FORCE_RECREATE_ID: true
     steps:
