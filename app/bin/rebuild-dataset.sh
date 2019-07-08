@@ -46,10 +46,10 @@ esac
 }
 
 # Synchronise GCS SLA bucket to local directory
-echo
-echo " ************** DEBUG ************"
-echo "      DISABLED BUCKET SYNC"
-echo
+# echo
+# echo " ************** DEBUG ************"
+# echo "      DISABLED BUCKET SYNC"
+# echo
 # retry gsutil -m rsync -d -r "gs://${RECHARGE_BUCKET_NAME}" "/tmp/bucket"
 
 pushd "/tmp/bucket" > /dev/null
@@ -149,11 +149,11 @@ do
 
 done # end year
 
-echo
-echo " ************** DEBUG ************"
-echo "      DISABLED BUCKET SYNC"
-echo
-# retry gsutil -m rsync -d -r "/tmp/bucket" "gs://${RECHARGE_BUCKET_NAME}" &
+# echo
+# echo " ************** DEBUG ************"
+# echo "      DISABLED BUCKET SYNC"
+# echo
+retry gsutil -m rsync -d -r "/tmp/bucket" "gs://${RECHARGE_BUCKET_NAME}" &
 
 bq-store-batch.sh
 

@@ -31,6 +31,7 @@ create_recharge_bucket() {
 function get_recharge_ids() {
   mkdir -p /tmp/bucket/
 
+  # If we're forcing recreation of ID files, don't copy remote to local
   gsutil -m rsync -d -r "gs://${RECHARGE_BUCKET_NAME}" /tmp/bucket
 
   pushd /tmp/bucket/
@@ -41,12 +42,18 @@ function get_recharge_ids() {
 
   ifs=$IFS
   IFS=$'\n'
+  echo
+  echo "=================================================================="
+  echo
   echo "Creating application id files:"
+  echo
   for deployment in $(kubectl get deployment -l app=planet4,environment=production,component=php --all-namespaces -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | tail -n+2)
   do
-    create_application_id_file "$deployment"
+    create_application_id_file "$deployment" &
   done
   IFS=$ifs;
+
+  wait
 }
 
 function create_application_id_file() {
@@ -119,10 +126,12 @@ app_environment: $app_environment
 }
 
 # Retrying here because gsutil is flaky, connection resets often
-echo "Create GCS bucket to store recharge data ..."
+echo "Confirm GCS bucket 'gs://${RECHARGE_BUCKET_NAME}' exists ..."
 retry create_recharge_bucket
 
-[ -z "${FORCE_RECREATE_ID}" ] && exit 0
-
-echo "Initialise bucket paths for production applications ..."
+echo "Initialise identifier JSON ..."
 retry get_recharge_ids
+
+echo
+echo "=================================================================="
+echo

@@ -1,11 +1,23 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -euo pipefail
 
 file=${1:-/app/${RECHARGE_SERVICE_KEY_FILE}}
 
+[ -e "$file" ] && {
+  >&2 echo
+  >&2 echo " ******************************************************* "
+  >&2 echo ""
+  >&2 echo "  WARNING: SERVICE ACCOUNT FILE EXISTS IN CONTAINER"
+  >&2 echo ""
+  >&2 echo "  This file should be passed as a b64 encoded env var"
+  >&2 echo ""
+  >&2 echo " ****************************************************** "
+  >&2 echo
+}
+
 [ -n "$RECHARGE_SERVICE_KEY" ] && {
   # Recharge is set in environment variable
-  echo "${RECHARGE_SERVICE_KEY}" > "$file"
+  base64 --decode <<<"${RECHARGE_SERVICE_KEY}" > "$file"
 }
 
 [ ! -e "$file" ] && {
