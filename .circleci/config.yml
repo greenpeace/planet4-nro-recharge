@@ -118,7 +118,7 @@ workflows:
       - monthly
     triggers:
       - schedule:
-          cron: "31 * * * *"
+          cron: "11 3 2 * *"
           filters:
             branches:
               only:
@@ -130,7 +130,7 @@ workflows:
           context: org-global
     triggers:
       - schedule:
-          cron: "35 * * * *"
+          cron: "33 3 2 1 *"
           filters:
             branches:
               only:
