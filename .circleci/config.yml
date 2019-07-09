@@ -120,7 +120,7 @@ workflows:
           context: org-global
     triggers:
       - schedule:
-          cron: "20 * * * *"
+          cron: "23 * * * *"
           filters:
             branches:
               only:
@@ -132,7 +132,7 @@ workflows:
           context: org-global
     triggers:
       - schedule:
-          cron: "25 * * * *"
+          cron: "30 * * * *"
           filters:
             branches:
               only:
