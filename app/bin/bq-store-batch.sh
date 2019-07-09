@@ -20,8 +20,6 @@ do
     continue
   }
 
-  ls /tmp/
-
   # Concatonate files
   jq -cMs 'map(.) | .[]' /tmp/etl-"$t"-*.json > "/tmp/batch/$t.json"
 

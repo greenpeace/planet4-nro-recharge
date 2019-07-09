@@ -10,7 +10,7 @@ defaults: &defaults
 version: 2
 
 jobs:
-  build-push:
+  build-test-push:
     <<: *defaults
     steps:
       - setup_remote_docker:
@@ -80,7 +80,7 @@ workflows:
   version: 2
   branch:
     jobs:
-      - build-push:
+      - build-test-push:
           context: org-global
           filters:
             branches:
@@ -88,7 +88,7 @@ workflows:
       - promote:
           context: org-global
           requires:
-            - build-push
+            - build-test-push
           filters:
             branches:
               only: develop
