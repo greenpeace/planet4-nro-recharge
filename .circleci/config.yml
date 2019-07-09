@@ -18,7 +18,6 @@ jobs:
       - checkout
       - run: make lint
       - run: make clean pull build
-      - run: activate-gcloud-account.sh
       - run: docker-login.sh
       - run: |
           mkdir -p /tmp/workspace/var
@@ -28,7 +27,7 @@ jobs:
       - run:
           name: Notify failure
           when: on_fail
-          command: TYPE="Build-push gcr.io/planet-4-151612/p4-nro-recharge" notify-job-failure.sh
+          command: TYPE="Build-push greenpeaceinternational/p4-nro-recharge" notify-job-failure.sh
 
   promote:
     <<: *defaults
@@ -37,9 +36,8 @@ jobs:
       - run:
           name: Release
           command: |
-            current_version=$(git-current-tag.sh)
-            new_version=$(increment-version.sh $current_version)
-            echo "Promoting branch ${CIRCLE_BRANCH} to ${new_version}"
+            new_version=$(git-new-version.sh)
+            echo "Promoting to ${new_version}"
             release-start.sh $new_version
             release-finish.sh $new_version
 
@@ -67,7 +65,7 @@ jobs:
     steps:
       - run: go.sh
 
-  refresh-id-files:
+  recreate-id:
     docker:
       - image: greenpeaceinternational/p4-nro-recharge:latest
     environment:
@@ -105,8 +103,7 @@ workflows:
 
   daily:
     jobs:
-      - daily:
-          context: org-global
+      - daily
     triggers:
       - schedule:
           cron: "5 2 * * *"
@@ -116,11 +113,10 @@ workflows:
                 - master
   monthly:
     jobs:
-      - monthly:
-          context: org-global
+      - monthly
     triggers:
       - schedule:
-          cron: "23 * * * *"
+          cron: "31 * * * *"
           filters:
             branches:
               only:
@@ -132,7 +128,7 @@ workflows:
           context: org-global
     triggers:
       - schedule:
-          cron: "30 * * * *"
+          cron: "35 * * * *"
           filters:
             branches:
               only:
