@@ -11,7 +11,7 @@ RECHARGE_PROJECT_ID ?= planet4-production
 RECHARGE_BUCKET_NAME ?= p4-nro-recharge
 
 # If FAST_INIT is true, don't recreate all buckets/datasets
-FAST_INIT ?= true
+FAST_INIT ?= 0
 
 # Use Docker buildkit?
 DOCKER_BUILDKIT ?= 1
