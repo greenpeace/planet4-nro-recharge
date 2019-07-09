@@ -9,7 +9,6 @@ PARENT_IMAGE ?= google/cloud-sdk:alpine
 
 RECHARGE_PROJECT_ID ?= planet4-production
 RECHARGE_BUCKET_NAME ?= p4-nro-recharge
-RECHARGE_SERVICE_KEY_FILE := gcloud-service-key.json
 
 # If FAST_INIT is true, don't recreate all buckets/datasets
 FAST_INIT ?= true
@@ -29,6 +28,15 @@ RECHARGE_BQ_DATASET := recharge_test
 endif
 
 SECRETS_DIR := secrets
+RECHARGE_SERVICE_KEY_FILE := gcloud-service-key.json
+
+# Create service key var from file, if not in env
+ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
+ifneq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
+RECHARGE_SERVICE_KEY := $(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE) | openssl enc -base64 -A)
+endif
+endif
+
 
 # ============================================================================
 
@@ -155,9 +163,7 @@ test: test-run test-clean
 
 test-run:
 ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
-ifeq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
 	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE) file does not exist)
-endif
 endif
 
 ifeq ($(strip $(NEWRELIC_REST_API_KEY)),)
@@ -180,7 +186,7 @@ endif
 		-e "NEWRELIC_APP_ID=$(NEWRELIC_APP_ID)" \
 		-e "NEWRELIC_APP_NAME=$(NEWRELIC_APP_NAME)" \
 		-e "RECHARGE_BUCKET_PATH=$(RECHARGE_BUCKET_PATH)" \
-		-e 'RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE) | openssl enc -base64 -A)' \
+		-e 'RECHARGE_SERVICE_KEY=$(RECHARGE_SERVICE_KEY)' \
 		-e "RECHARGE_PERIOD=$(RECHARGE_PERIOD)" \
 		-e "RECHARGE_PERIOD_DAY=$(RECHARGE_PERIOD_DAY)" \
 		-e "RECHARGE_PERIOD_MONTH=$(RECHARGE_PERIOD_MONTH)" \
@@ -198,9 +204,7 @@ ifeq ($(strip $(NEWRELIC_REST_API_KEY)),)
 endif
 
 ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
-ifeq (,$(wildcard $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE)))
-	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(RECHARGE_SERVICE_KEY_FILE) file does not exist)
-endif
+	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE) file does not exist)
 endif
 
 ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
@@ -215,6 +219,6 @@ endif
 			-e "FORCE_RECREATE_ID=$(FORCE_RECREATE_ID)" \
 			-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
 			-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
-			-e 'RECHARGE_SERVICE_KEY=$(shell cat $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE) | openssl enc -base64 -A)' \
+			-e 'RECHARGE_SERVICE_KEY=$(RECHARGE_SERVICE_KEY)' \
 			$(BUILD_NAMESPACE)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
 			rebuild-dataset.sh
