@@ -17,13 +17,15 @@ jobs:
           docker_layer_caching: true
       - checkout
       - run: make lint
-      - run: make clean pull build
+      - run: make clean
+      - run: make pull
+      - run: make build
+      - run: make test
       - run: docker-login.sh
       - run: |
           mkdir -p /tmp/workspace/var
           echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
       - run: make -j2 push
-      - run: TYPE="@rawalker Promotion" notify-job-hold.sh
       - run:
           name: Notify failure
           when: on_fail
