@@ -67,7 +67,7 @@ jobs:
     steps:
       - run: go.sh
 
-  recreate-id:
+  id:
     docker:
       - image: greenpeaceinternational/p4-nro-recharge:latest
     environment:
@@ -135,3 +135,12 @@ workflows:
             branches:
               only:
                 - master
+
+  recreate-id:
+    jobs:
+      - id:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /id.*/
