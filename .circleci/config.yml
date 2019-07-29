@@ -73,9 +73,7 @@ jobs:
     environment:
       FORCE_RECREATE_ID: true
     steps:
-      - run: activate-service-account.sh
-      - run: init-gcs.sh
-      - run: gsutil -m rsync -d -r /tmp/bucket "gs://${RECHARGE_BUCKET_NAME}"
+      - run: rebuild-id.sh
 
 workflows:
   version: 2
