@@ -109,7 +109,11 @@ workflows:
 
   daily:
     jobs:
-      - daily
+      - id
+      - daily:
+        context: org-global
+        requires:
+          - id
     triggers:
       - schedule:
           cron: "5 2 * * *"
