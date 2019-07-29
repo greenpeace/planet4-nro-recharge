@@ -127,8 +127,7 @@ workflows:
 
   yearly:
     jobs:
-      - monthly:
-          context: org-global
+      - yearly
     triggers:
       - schedule:
           cron: "33 3 2 1 *"
