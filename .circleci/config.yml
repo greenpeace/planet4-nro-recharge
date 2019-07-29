@@ -74,6 +74,11 @@ jobs:
       FORCE_RECREATE_ID: true
     steps:
       - run: rebuild-id.sh
+      - run:
+          name: Error notification
+          when: on_fail
+          command: TYPE="NewRelic ID Rebuild" EXTRA_TEXT="@rawalker" notify-job-failure.sh
+
 
 workflows:
   version: 2
@@ -137,6 +142,7 @@ workflows:
   recreate-id:
     jobs:
       - id:
+          context: org-global
           filters:
             branches:
               ignore: /.*/
