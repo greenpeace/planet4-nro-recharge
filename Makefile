@@ -159,7 +159,7 @@ push-latest:
 
 #	============================================================================
 
-test: test-rebuild-id.sh test-run test-clean
+test: test-rebuild-id test-run test-clean
 
 test-run:
 ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
