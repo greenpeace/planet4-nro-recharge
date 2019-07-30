@@ -50,6 +50,10 @@ jobs:
       RECHARGE_PERIOD: day
     steps:
       - run: go.sh
+      - run:
+          name: Error notification
+          when: on_fail
+          command: TYPE="Daily" EXTRA_TEXT="@rawalker" notify-job-failure.sh
 
   monthly:
     docker:
@@ -58,6 +62,10 @@ jobs:
       RECHARGE_PERIOD: month
     steps:
       - run: go.sh
+      - run:
+          name: Error notification
+          when: on_fail
+          command: TYPE="Monthly" EXTRA_TEXT="@rawalker" notify-job-failure.sh
 
   yearly:
     docker:
@@ -66,6 +74,10 @@ jobs:
       RECHARGE_PERIOD: year
     steps:
       - run: go.sh
+      - run:
+          name: Error notification
+          when: on_fail
+          command: TYPE="Yearly" EXTRA_TEXT="@rawalker" notify-job-failure.sh
 
   id:
     docker:
@@ -123,7 +135,8 @@ workflows:
                 - master
   monthly:
     jobs:
-      - monthly
+      - monthly:
+          context: org-global
     triggers:
       - schedule:
           cron: "11 3 2 * *"
@@ -134,7 +147,8 @@ workflows:
 
   yearly:
     jobs:
-      - yearly
+      - yearly:
+          context: org-global
     triggers:
       - schedule:
           cron: "33 3 2 1 *"
