@@ -215,7 +215,7 @@ endif
 
 	time docker run --name recharge-test --rm \
 		-e "FAST_INIT=$(FAST_INIT)" \
-		-e "FORCE_RECREATE_ID=$(FORCE_RECREATE_ID)" \
+		-e "FORCE_RECREATE_ID=1" \
 		-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
 		-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
 		-e "RECHARGE_BUCKET_NAME=p4-nro-recharge-test" \
