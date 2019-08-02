@@ -2,18 +2,41 @@
 # shellcheck disable=SC1091
 set -euo pipefail
 
+function open_sem() {
+  mkfifo pipe-$$
+  exec 3<>pipe-$$
+  rm pipe-$$
+  local i=$1
+  for((;i>0;i--)); do
+      printf %s 000 >&3
+  done
+}
+
+function run_with_lock() {
+  local x
+  read -r -u 3 -n 3 x && ((0==x)) || exit "$x"
+  (
+   ( "$@"; )
+  printf '%.3d' $? >&3
+  )&
+}
+
 function main() {
 
-  # Determine which application(s) we want data for
   declare -a apps
   mapfile -t apps < <(get_applications)
+
+  N=4
+  open_sem $N
+
   for app in "${apps[@]}"
   do
-    # Process this application's recharge data
-    queue_application "$app" &
+      run_with_lock queue_application "$app"
   done
 
   wait
+
+  echo " ✓ Finished go-newrelic.sh"
 }
 
 function get_applications() {
