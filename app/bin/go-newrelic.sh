@@ -43,7 +43,6 @@ function get_applications() {
   # If NEWRELIC_APP_ID is not blank
 
   # Fetch NewRelic application IDs from id.json
-
   while IFS= read -r -d '' file
   do
     [[ -n "${NEWRELIC_APP_ID}" ]] && {
@@ -79,22 +78,42 @@ function queue_application() {
   local newrelic_id
   local newrelic_name
 
+  set +e
   app_domain=$(jq -r '.app_domain' "$app_file")
   app_path=$(jq -r '.app_path' "$app_file")
 
+  [ -z "$app_domain" ] && {
+    >&2 echo "ERROR: app_domain is blank in $app_file"
+    >&2 cat "$app_file"
+  }
+
   newrelic_id=$(jq -r '.newrelic_id' "$app_file")
+  [ -z "$newrelic_id" ] && {
+    >&2 echo "ERROR: newrelic_id is blank in $app_file"
+    >&2 cat "$app_file"
+  }
+
   newrelic_name=$(jq -r '.newrelic_name' "$app_file")
+  [ -z "$newrelic_name" ] && {
+    >&2 echo "ERROR: newrelic_name is blank in $app_file"
+    >&2 cat "$app_file"
+  }
+  set -e
 
   >&2 echo "$newrelic_id - Processing $newrelic_name ..."
 
   # Fetch SLA data for application on date
   newrelic-sla-get.sh "$newrelic_id"
 
+  echo "$newrelic_id ✓ Fetch complete"
+
   # Stores SLA data in bucket
   # newrelic-sla-upload.sh "$newrelic_id" "$app_domain/$app_path"
 
   # Transform NewRelic data to BigQuery table format
   newrelic-sla-etl.sh "$newrelic_id" "$app_domain/$app_path"
+
+  echo "$newrelic_id ✓ $app_domain/$app_path complete"
 }
 
 # If NEWRELIC_APP_ID is set
