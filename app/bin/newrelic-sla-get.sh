@@ -12,11 +12,12 @@ fi
 
 range=${2:-"from=${DATE_START}T00:00:00+00:00Z&to=${DATE_END}T23:59:59+00:00Z"}
 
-now=$(date -d 'now' +%s)
+now=$(date +%s)
 end=$(date -d "${DATE_END} 23:59:59" +%s)
 
 [[ $end -ge "$now" ]] && {
   >&2 echo "WARNING: End date is in the future. Skipping ..."
+  >&2 echo "$end >= $now"
   exit 0
 }
 
@@ -33,11 +34,18 @@ curl -s -X GET "https://api.newrelic.com/v2/applications/$app_id/metrics/data.js
      -H "X-Api-Key:$NEWRELIC_REST_API_KEY" \
      -d "names[]=Apdex&names[]=EndUser/Apdex&$range&summarize=true" -o "$outfile"
 
-jq -e '.error' "$outfile" > /dev/null && {
-  >&2 echo "$app_id ✗ ERROR: NewRelic API said: $(jq '.error.title' "$outfile")"
-  echo
-  exit 1
-}
+ if jq -e . "$outfile" > /dev/null
+ then
+   jq -e '.error' "$outfile" > /dev/null && {
+     >&2 echo "$app_id ✗ ERROR: NewRelic API said: $(jq '.error.title' "$outfile")"
+     echo
+     exit 1
+   }
+ else
+     >&2 echo "Failed to parse JSON, or got false/null"
+     >&2 cat "$outfile"
+     exit 1
+ fi
 
 # Echo output for logs
 # jq -M . < "/tmp/sla-$app_id.json"
