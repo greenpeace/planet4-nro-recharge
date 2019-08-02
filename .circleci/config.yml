@@ -50,6 +50,10 @@ jobs:
       RECHARGE_PERIOD: day
     steps:
       - run: go.sh
+      - run:
+          name: Error notification
+          when: on_fail
+          command: TYPE="Daily" EXTRA_TEXT="@rawalker" notify-job-failure.sh
 
   monthly:
     docker:
@@ -58,6 +62,10 @@ jobs:
       RECHARGE_PERIOD: month
     steps:
       - run: go.sh
+      - run:
+          name: Error notification
+          when: on_fail
+          command: TYPE="Monthly" EXTRA_TEXT="@rawalker" notify-job-failure.sh
 
   yearly:
     docker:
@@ -66,6 +74,10 @@ jobs:
       RECHARGE_PERIOD: year
     steps:
       - run: go.sh
+      - run:
+          name: Error notification
+          when: on_fail
+          command: TYPE="Yearly" EXTRA_TEXT="@rawalker" notify-job-failure.sh
 
   id:
     docker:
@@ -73,8 +85,12 @@ jobs:
     environment:
       FORCE_RECREATE_ID: true
     steps:
-      - run: init-gcs.sh
-      - run: gsutil -m rsync -d -r /tmp/bucket "gs://${RECHARGE_BUCKET_NAME}"
+      - run: rebuild-id.sh
+      - run:
+          name: Error notification
+          when: on_fail
+          command: TYPE="NewRelic ID Rebuild" EXTRA_TEXT="@rawalker" notify-job-failure.sh
+
 
 workflows:
   version: 2
@@ -105,7 +121,11 @@ workflows:
 
   daily:
     jobs:
-      - daily
+      - id
+      - daily:
+          context: org-global
+          requires:
+            - id
     triggers:
       - schedule:
           cron: "5 2 * * *"
@@ -115,7 +135,8 @@ workflows:
                 - master
   monthly:
     jobs:
-      - monthly
+      - monthly:
+          context: org-global
     triggers:
       - schedule:
           cron: "11 3 2 * *"
@@ -126,7 +147,7 @@ workflows:
 
   yearly:
     jobs:
-      - monthly:
+      - yearly:
           context: org-global
     triggers:
       - schedule:
@@ -139,6 +160,7 @@ workflows:
   recreate-id:
     jobs:
       - id:
+          context: org-global
           filters:
             branches:
               ignore: /.*/

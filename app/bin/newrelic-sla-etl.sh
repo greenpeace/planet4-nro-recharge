@@ -25,7 +25,7 @@ echo "$newrelic_id - Converting NewRelic output to BigQuery table format ..."
 output_file="/tmp/etl-appdex-$RECHARGE_PERIOD-$endtime-$newrelic_id.json"
 
 # Manipulate data to match BQ schema
-jq -cM \
+if ! jq -cM \
   --arg site "$site" \
   --arg period "$RECHARGE_PERIOD" \
   '.metric_data
@@ -33,7 +33,12 @@ jq -cM \
   + { period: $period, site: $site, from: .from[0:10], to: .to[0:10] }
   + .metrics[0].timeslices[0].values
   | del(.metrics)' "$sla_file" > "$output_file"
-
+then
+  >&2 echo "$newrelic_id ✗ ERROR reading file: $sla_file"
+  >&2 echo
+  >&2 cat "$newrelic_id ✗ $sla_file"
+  exit 1
+fi
 # ============================================================================
 
 # End user SLA data
@@ -41,7 +46,7 @@ jq -cM \
 output_file="/tmp/etl-enduser-$RECHARGE_PERIOD-$endtime-$newrelic_id.json"
 
 # Manipulate data to match BQ schema
-jq -cM \
+if ! jq -cM \
   --arg site "$site" \
   --arg period "$RECHARGE_PERIOD" \
   '.metric_data
@@ -49,5 +54,9 @@ jq -cM \
   + { period: $period, site: $site, from: .from[0:10], to: .to[0:10] }
   + .metrics[1].timeslices[0].values
   | del(.metrics)' "$sla_file" > "$output_file"
-
-echo "$newrelic_id ✓ Transformation complete"
+then
+  >&2 echo "$newrelic_id ✗ ERROR reading file: $sla_file"
+  >&2 echo
+  >&2 cat "$newrelic_id ✗ $sla_file"
+  exit 1
+fi

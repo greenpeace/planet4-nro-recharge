@@ -86,10 +86,8 @@ function create_application_id_file() {
   [ -e "$app_domain/$app_path/id.json" ] && {
     # Do nothing
     printf "    ✓ id file exists in %s/%s" "$app_domain" "$app_path"
-    [[ -z "${FORCE_RECREATE_ID}" ]] && {
-      echo ", FORCE_RECREATE_ID is not set, continuing ..."
-      return
-    }
+
+    [[ -z "${FORCE_RECREATE_ID}" ]] && echo && return
 
     echo ", FORCE_RECREATE_ID is set, overwriting ..."
 

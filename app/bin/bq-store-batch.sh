@@ -20,8 +20,31 @@ do
     continue
   }
 
+  echo "Processing $t ..."
+
+  files=$(ls /tmp/etl-"$t"-*.json)
+
   # Concatonate files
-  jq -cMs 'map(.) | .[]' /tmp/etl-"$t"-*.json > "/tmp/batch/$t.json"
+  if ! jq -sMc 'group_by(.site)[] | add' $files > "/tmp/batch/$t.json"
+  then
+    >&2 echo "ERROR creating $t.json"
+    count=1
+    while IFS= read -r -d '' file
+    do
+      if ! jq -e . "$file" > /dev/null
+      then
+        >&2 printf '%-3d ✗ ERROR parsing: %s\n' $count "$file"
+        cat "$file"
+        jq -e "$file" || true
+        echo
+      else
+        >&2 printf '%-3d ✓ %s\n' $count "$file"
+      fi
+      count=$(( count + 1 ))
+    done < <(find /tmp -name etl-$t-\* -print0)
+
+    exit 1
+  fi
 
   # Upload to BigQuery
   bq-store-single.sh "/tmp/batch/$t.json" "newrelic_$t"

@@ -159,7 +159,7 @@ push-latest:
 
 #	============================================================================
 
-test: test-run test-clean
+test: test-rebuild-id test-run test-clean
 
 test-run:
 ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
@@ -195,6 +195,37 @@ endif
 
 test-clean:
 	$(warning Not yet implemented. @TODO delete testing bucket and bq data)
+
+test-rebuild-id:
+ifeq ($(strip $(RECHARGE_SERVICE_KEY)),)
+	$(error Environment variable RECHARGE_SERVICE_KEY is not set, and $(SECRETS_DIR)/$(RECHARGE_SERVICE_KEY_FILE) file does not exist)
+endif
+
+ifeq ($(strip $(NEWRELIC_REST_API_KEY)),)
+	$(error Environment variable NEWRELIC_REST_API_KEY is not set)
+endif
+
+ifeq ($(strip $(RECHARGE_BQ_DATASET)),recharge_test)
+	$(warning *** Using test dataset: RECHARGE_BQ_DATASET=recharge_test ***)
+endif
+
+ifneq ($(strip $(FORCE_RECREATE_ID)),)
+	$(warning *** Recreating all appliation ID files! ***)
+endif
+
+	time docker run --name recharge-test --rm \
+		-e "FAST_INIT=$(FAST_INIT)" \
+		-e "FORCE_RECREATE_ID=1" \
+		-e "RECHARGE_BQ_DATASET=$(RECHARGE_BQ_DATASET)" \
+		-e "NEWRELIC_REST_API_KEY=$(NEWRELIC_REST_API_KEY)" \
+		-e "RECHARGE_BUCKET_NAME=p4-nro-recharge-test" \
+		-e 'RECHARGE_SERVICE_KEY=$(RECHARGE_SERVICE_KEY)' \
+		-e "RECHARGE_PERIOD=$(RECHARGE_PERIOD)" \
+		-e "RECHARGE_PERIOD_DAY=$(RECHARGE_PERIOD_DAY)" \
+		-e "RECHARGE_PERIOD_MONTH=$(RECHARGE_PERIOD_MONTH)" \
+		-e "RECHARGE_PERIOD_YEAR=$(RECHARGE_PERIOD_YEAR)" \
+		$(BUILD_NAMESPACE)/$(BUILD_IMAGE):build-$(BUILD_NUM) \
+		rebuild-id.sh
 
 #	============================================================================
 
