@@ -1,10 +1,16 @@
 ---
+docker_auth: &docker_auth
+  username: $DOCKERHUB_USERNAME
+  password: $DOCKERHUB_PASSWORD
+
 defaults: &defaults
   environment:
     GOOGLE_PROJECT_ID: planet-4-151612
     DOCKER_BUILDKIT: 0
   docker:
     - image: greenpeaceinternational/circleci-base:latest
+      auth:
+        <<: *docker_auth
   working_directory: /home/circleci/app
 
 version: 2
@@ -18,10 +24,10 @@ jobs:
       - checkout
       - run: make lint
       - run: make clean
+      - run: docker-login.sh
       - run: make pull
       - run: make build
       - run: make test
-      - run: docker-login.sh
       - run: |
           mkdir -p /tmp/workspace/var
           echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
@@ -46,6 +52,8 @@ jobs:
   daily:
     docker:
       - image: greenpeaceinternational/p4-nro-recharge:latest
+        auth:
+          <<: *docker_auth
     environment:
       RECHARGE_PERIOD: day
     steps:
@@ -58,6 +66,8 @@ jobs:
   monthly:
     docker:
       - image: greenpeaceinternational/p4-nro-recharge:latest
+        auth:
+          <<: *docker_auth
     environment:
       RECHARGE_PERIOD: month
     steps:
@@ -70,6 +80,8 @@ jobs:
   yearly:
     docker:
       - image: greenpeaceinternational/p4-nro-recharge:latest
+        auth:
+          <<: *docker_auth
     environment:
       RECHARGE_PERIOD: year
     steps:
@@ -82,6 +94,8 @@ jobs:
   id:
     docker:
       - image: greenpeaceinternational/p4-nro-recharge:latest
+        auth:
+          <<: *docker_auth
     environment:
       FORCE_RECREATE_ID: true
     steps:
