@@ -135,7 +135,8 @@ workflows:
 
   daily:
     jobs:
-      - id
+      - id:
+          context: org-global
       - daily:
           context: org-global
           requires:
