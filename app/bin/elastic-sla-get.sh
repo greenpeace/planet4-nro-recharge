@@ -20,7 +20,7 @@ end=$(date -d "${DATE_END} 23:59:59" +%s)
 mkdir -p /tmp
 
 echo "$elastic_servicename - Fetching Elastic Transaction data ..."
-echo "$elastic_servicename - App:    elastic_servicename"
+echo "$elastic_servicename - App:   $elastic_servicename"
 echo "$elastic_servicename - Dates:  FROM: $from TO: $to"
 
 outfile="/tmp/sla-$RECHARGE_PERIOD-${end}-${elastic_servicename}.json"

@@ -108,6 +108,7 @@ function queue_application() {
     >&2 cat "$app_file"
   }
 
+  cat $app_file
   elastic_servicename=$(jq -r '.elastic_servicename' "$app_file")
   [ -z "$elastic_servicename" ] && {
     >&2 echo "ERROR: elastic_servicename is blank in $app_file"
