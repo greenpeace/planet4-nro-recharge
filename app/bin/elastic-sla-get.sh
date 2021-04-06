@@ -23,7 +23,7 @@ echo "$elastic_servicename - Fetching Elastic Transaction data ..."
 echo "$elastic_servicename - App:    elastic_servicename"
 echo "$elastic_servicename - Dates:  FROM: $from TO: $to"
 
-outfile="/tmp/sla-$RECHARGE_PERIOD-${end}-${elastic_servicename}-${}.json"
+outfile="/tmp/sla-$RECHARGE_PERIOD-${end}-${elastic_servicename}.json"
 
 
 curl -s -X GET "http://localhost:9200/apm-*-transaction-*/_count" \
