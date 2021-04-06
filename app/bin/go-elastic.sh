@@ -38,14 +38,15 @@ function main() {
 
   for app in "${apps[@]}"
   do
-      run_with_lock queue_application "$app"
+      run_with_lock queue_application "$app" 
   done
 
-  wait
-
+  echo "Waiting..."
+  sleep 5
   echo "Killing port forward, PID: $kube_pid"
   kill -9 "$kube_pid"
-  
+  wait
+
   echo " ✓ Finished go-elastic.sh"
 }
 
