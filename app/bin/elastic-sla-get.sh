@@ -35,33 +35,31 @@ curl -s -X GET "http://localhost:9200/apm-*-transaction-*/_count" \
             "must": [
                 {
                     "term": {
-                        "service.name": "'$elastic_servicename'"
+                        "service.name": "'"$elastic_servicename"'"
                     }
                 },
                 {
                     "term": {
-                        "service.environment": "'$app_environment'"
+                        "service.environment": "'"$app_environment"'"
                     }
                 },
                 {
                     "range": {
                         "@timestamp": {
-                            "gte": "'$from'",
-                            "lte": "'$to'"
+                            "gte": "'"$from"'",
+                            "lte": "'"$to"'"
                         }
                     }
                 }
             ]
         }
     }
-}
-     '
-     -o "$outfile"
+}' -o "$outfile"
 
  if jq -e . "$outfile" > /dev/null
  then
    jq -e '.error' "$outfile" > /dev/null && {
-     >&2 echo "$app_id ✗ ERROR: Elastic API said: $(jq '.error.type' "$outfile")"
+     >&2 echo "$elastic_servicename ✗ ERROR: Elastic API said: $(jq '.error.type' "$outfile")"
      echo
      exit 1
    }
@@ -71,4 +69,4 @@ curl -s -X GET "http://localhost:9200/apm-*-transaction-*/_count" \
      exit 1
  fi
 
->&2 echo "$app_id ✓ Recharge data gathered successfully"
+>&2 echo "$elastic_servicename ✓ Recharge data gathered successfully"
