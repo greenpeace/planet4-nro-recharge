@@ -27,7 +27,7 @@ function main() {
   mapfile -t apps < <(get_applications)
 
   # Portfoward to elastic master in cluster
-  POD_NAME=$(kubectl get pods --namespace default -l "app=elasticsearch,component=client,release=p4-es" -o jsonpath="{.items\[0\].metadata.name}")
+  POD_NAME=$(kubectl get pods --namespace default -l "app=elasticsearch,component=client,release=p4-es" -o jsonpath="{.items[0].metadata.name}")
   kubectl port-forward --namespace default "$POD_NAME" 9200:9200 &
   kube_pid=$!
 
