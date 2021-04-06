@@ -10,6 +10,7 @@ bq ls "$RECHARGE_BQ_DATASET" || {
 tables=(
   newrelic_appdex
   newrelic_enduser
+  elastic_appdex
 )
 
 views=(

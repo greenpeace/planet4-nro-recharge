@@ -46,9 +46,9 @@ echo
 
 
 # Extract, transform, load NewRelic SLA data to BigQuery
-go-newrelic.sh
+go-elastic.sh
 
-bq-store-batch.sh
+bq-store-batch-elastic.sh
 
 # Synchronise local changes with GCS bucket
 gsutil -m rsync -d -r /tmp/bucket "gs://${RECHARGE_BUCKET_NAME}"

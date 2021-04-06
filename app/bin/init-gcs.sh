@@ -66,6 +66,7 @@ function create_application_id_file() {
   local app_id
   local app_name
   local app_path
+  local elastic_servicename
 
   name=$(echo "$deployment" | cut -d' ' -f1)
   ns=$(echo "$deployment" | tr -s ' ' | cut -d' ' -f2)
@@ -79,6 +80,7 @@ function create_application_id_file() {
   app_domain=$(grep APP_HOSTNAME <<<"$describe" | cut -d: -f2 | xargs)
   app_path=$(grep APP_HOSTPATH <<<"$describe" | cut -d: -f2 | xargs)
   app_environment=$(grep APP_ENV <<<"$describe" | cut -d: -f2 | xargs)
+  elastic_servicename=$ns-$app_environment
 
   echo " > $name :: $app_domain/$app_path"
 
@@ -114,12 +116,14 @@ function create_application_id_file() {
     --arg app_domain "$app_domain" \
     --arg app_path "$app_path" \
     --arg app_environment "$app_environment" \
+    --arg elastic_servicename "$elastic_servicename"
 '{
 newrelic_id: $newrelic_id,
 newrelic_name: $newrelic_name,
 app_domain: $app_domain,
 app_path: $app_path,
-app_environment: $app_environment
+app_environment: $app_environment,
+elastic_servicename: $elastic_servicename
 }' | tee "$app_domain/$app_path/id.json"
 }
 
