@@ -7,8 +7,8 @@ elastic_servicename="$1"
 # Expects hostname/path as site unique identifier
 site="$2"
 
-from="${DATE_START}T00:00:00+00:00Z"
-to="${DATE_END}T23:59:59+00:00Z"
+from="${DATE_START}"
+to="${DATE_END}"
 
 endtime="$(date -d "${DATE_END} 23:59:59" +%s)"
 
