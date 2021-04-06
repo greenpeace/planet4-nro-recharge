@@ -27,9 +27,11 @@ function main() {
   mapfile -t apps < <(get_applications)
 
   # Portfoward to elastic master in cluster
+  echo "Opening portfoward to elastic"
   POD_NAME=$(kubectl get pods --namespace default -l "app=elasticsearch,component=client,release=p4-es" -o jsonpath="{.items[0].metadata.name}")
   kubectl port-forward --namespace default "$POD_NAME" 9200:9200 &
-  kube_pid=$!
+  kube_pid="$!"
+  echo "Opened, PID is: $kube_pid"
 
   N=4
   open_sem $N
@@ -41,7 +43,8 @@ function main() {
 
   wait
 
-  kill -KILL $kube_pid
+  echo "Killing port forward, PID: $kube_pid"
+  kill -9 "$kube_pid"
   
   echo " ✓ Finished go-elastic.sh"
 }
