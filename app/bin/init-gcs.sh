@@ -39,6 +39,7 @@ function get_recharge_ids() {
   # gcloud container clusters get-credentials planet4-production \
   #   --zone us-central1-a \
   #   --project planet4-production
+
   # Comment this out for production
   gcloud container clusters get-credentials p4-development --zone us-central1-a --project planet-4-151612
   ifs=$IFS
@@ -48,10 +49,14 @@ function get_recharge_ids() {
   echo
   echo "Creating application id files:"
   echo
-  for deployment in $(kubectl get deployment -l app=planet4,environment=production,component=php --all-namespaces -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | tail -n+2)
+  for deployment in $(kubectl get deployment -l app=planet4,environment=development,component=php --all-namespaces -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | tail -n+2)
   do
     create_application_id_file "$deployment" &
   done
+  # for deployment in $(kubectl get deployment -l app=planet4,environment=production,component=php --all-namespaces -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | tail -n+2)
+  # do
+  #   create_application_id_file "$deployment" &
+  # done
   IFS=$ifs;
 
   wait
@@ -81,7 +86,7 @@ function create_application_id_file() {
   app_domain=$(grep APP_HOSTNAME <<<"$describe" | cut -d: -f2 | xargs)
   app_path=$(grep APP_HOSTPATH <<<"$describe" | cut -d: -f2 | xargs)
   app_environment=$(grep APP_ENV <<<"$describe" | cut -d: -f2 | xargs)
-  elastic_servicename="$ns-$app_environment"
+  elastic_servicename="$app_path-$app_environment"
 
   echo " > $name :: $app_domain/$app_path"
 
