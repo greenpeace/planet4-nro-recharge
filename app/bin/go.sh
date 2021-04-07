@@ -46,7 +46,7 @@ echo
 
 
 # Extract, transform, load NewRelic SLA data to BigQuery
-bash -x go-elastic.sh
+go-elastic.sh
 
 bq-store-batch-elastic.sh
 

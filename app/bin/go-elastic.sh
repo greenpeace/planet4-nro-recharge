@@ -28,7 +28,15 @@ function main() {
 
   # Portfoward to elastic master in cluster
   echo "Opening portfoward to elastic"
-  POD_NAME=$(kubectl get pods --namespace default -l "app=elasticsearch,component=client,release=p4-es" -o jsonpath="{.items[0].metadata.name}")
+
+  # Comment this out for production
+  gcloud container clusters get-credentials planet4-production \
+    --zone us-central1-a \
+    --project planet4-production
+  # This is for production
+  # POD_NAME=$(kubectl get pods --namespace default -l "app=elasticsearch,component=client,release=p4-es" -o jsonpath="{.items[0].metadata.name}")
+  POD_NAME=$(kubectl get pods --namespace elastic -l "app=elasticsearch-client,release=p4-es-client" -o jsonpath="{.items[0].metadata.name}")
+
   kubectl port-forward --namespace default "$POD_NAME" 9200:9200 &
   kube_pid="$!"
   echo "Opened, PID is: $kube_pid"
