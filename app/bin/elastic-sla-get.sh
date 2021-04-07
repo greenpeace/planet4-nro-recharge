@@ -5,11 +5,11 @@ elastic_servicename="$1"
 app_environment="$2"
 
 
-# from="${DATE_START}T00:00:00+00:00Z"
-# to="${DATE_END}T23:59:59+00:00Z"
+from="${DATE_START}T00:00:00+00:00Z"
+to="${DATE_END}T23:59:59+00:00Z"
 
-from="2021-04-07T00:00:00+00:00Z"
-to="2021-04-07T23:59:59+00:00Z"
+# from="2021-04-07T00:00:00+00:00Z"
+# to="2021-04-07T23:59:59+00:00Z"
 
 now=$(date +%s)
 end=$(date -d "${DATE_END} 23:59:59" +%s)

@@ -55,5 +55,3 @@ then
   >&2 cat "$elastic_servicename ✗ $sla_file"
   exit 1
 fi
-
-cat "$output_file"
