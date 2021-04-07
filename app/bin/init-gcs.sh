@@ -114,7 +114,7 @@ function create_application_id_file() {
 
   mkdir -p "$app_domain/$app_path"
 
-  elastic_servicename=$("$app_name" | tr '[:upper:]' '[:lower:]' |  tr " " "-")
+  elastic_servicename=$(echo "$app_name" | tr '[:upper:]' '[:lower:]' |  tr " " "-")
   # Create id JSON file in bucket app_path
   jq -cnM \
     --arg newrelic_id "$app_id" \
