@@ -30,9 +30,7 @@ function main() {
   echo "Opening portfoward to elastic"
 
   # Comment this out for production
-  gcloud container clusters get-credentials planet4-production \
-    --zone us-central1-a \
-    --project planet4-production
+  gcloud container clusters get-credentials p4-development --zone us-central1-a --project planet-4-151612
   # This is for production
   # POD_NAME=$(kubectl get pods --namespace default -l "app=elasticsearch,component=client,release=p4-es" -o jsonpath="{.items[0].metadata.name}")
   POD_NAME=$(kubectl get pods --namespace elastic -l "app=elasticsearch-client,release=p4-es-client" -o jsonpath="{.items[0].metadata.name}")
