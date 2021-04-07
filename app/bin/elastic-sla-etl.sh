@@ -48,10 +48,12 @@ if ! jq -cM \
    threshold: 0,
    threshold_min: 0
 }
-' "$sla_file" > "$output_file" && cat "$output_file"
+' "$sla_file" > "$output_file"
 then
   >&2 echo "$elastic_servicename ✗ ERROR reading file: $sla_file"
   >&2 echo
   >&2 cat "$elastic_servicename ✗ $sla_file"
   exit 1
 fi
+
+cat "$output_file"
