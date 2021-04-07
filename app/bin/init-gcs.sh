@@ -86,7 +86,6 @@ function create_application_id_file() {
   app_domain=$(grep APP_HOSTNAME <<<"$describe" | cut -d: -f2 | xargs)
   app_path=$(grep APP_HOSTPATH <<<"$describe" | cut -d: -f2 | xargs)
   app_environment=$(grep APP_ENV <<<"$describe" | cut -d: -f2 | xargs)
-  elastic_servicename="$app_path-$app_environment"
 
   echo " > $name :: $app_domain/$app_path"
 
@@ -115,6 +114,7 @@ function create_application_id_file() {
 
   mkdir -p "$app_domain/$app_path"
 
+  elastic_servicename="$app_name"
   # Create id JSON file in bucket app_path
   jq -cnM \
     --arg newrelic_id "$app_id" \
