@@ -36,12 +36,12 @@ function get_recharge_ids() {
 
   pushd /tmp/bucket/
 
-  # gcloud container clusters get-credentials planet4-production \
-  #   --zone us-central1-a \
-  #   --project planet4-production
+  gcloud container clusters get-credentials planet4-production \
+    --zone us-central1-a \
+    --project planet4-production
 
   # Comment this out for production
-  gcloud container clusters get-credentials p4-development --zone us-central1-a --project planet-4-151612
+  # gcloud container clusters get-credentials p4-development --zone us-central1-a --project planet-4-151612
   ifs=$IFS
   IFS=$'\n'
   echo
