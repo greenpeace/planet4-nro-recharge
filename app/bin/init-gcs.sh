@@ -111,8 +111,6 @@ function create_application_id_file() {
     --arg app_environment "$app_environment" \
     --arg elastic_servicename "$elastic_servicename" \
 '{
-newrelic_id: $newrelic_id,
-newrelic_name: $newrelic_name,
 app_domain: $app_domain,
 app_path: $app_path,
 app_environment: $app_environment,

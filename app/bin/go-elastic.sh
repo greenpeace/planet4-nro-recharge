@@ -57,27 +57,9 @@ function main() {
 }
 
 function get_applications() {
-  # If NEWRELIC_APP_ID is not blank
 
-  # Fetch NewRelic application IDs from id.json
   while IFS= read -r -d '' file
   do
-    [[ -n "${NEWRELIC_APP_ID}" ]] && {
-      # Fetch data for a single application
-      [[ $(jq -r '.newrelic_id' "$file") = "${NEWRELIC_APP_ID}" ]] && {
-        # Found matching file
-        >&2 echo " ✓ $(jq -r '.newrelic_name' "$file")"
-        >&2 echo
-
-        # Print file output
-        echo "$file"
-
-        return
-      }
-      # Not the correct file
-      continue
-    }
-
     # Fetching all application data
     >&2 echo " ✓ ${file##/tmp/bucket/}"
 
@@ -93,8 +75,6 @@ function queue_application() {
   local app_domain
   local app_path
   local app_environment
-  local newrelic_id
-  local newrelic_name
 
   set +e
   app_domain=$(jq -r '.app_domain' "$app_file")
@@ -103,18 +83,6 @@ function queue_application() {
 
   [ -z "$app_domain" ] && {
     >&2 echo "ERROR: app_domain is blank in $app_file"
-    >&2 cat "$app_file"
-  }
-
-  newrelic_id=$(jq -r '.newrelic_id' "$app_file")
-  [ -z "$newrelic_id" ] && {
-    >&2 echo "ERROR: newrelic_id is blank in $app_file"
-    >&2 cat "$app_file"
-  }
-
-  newrelic_name=$(jq -r '.newrelic_name' "$app_file")
-  [ -z "$newrelic_name" ] && {
-    >&2 echo "ERROR: newrelic_name is blank in $app_file"
     >&2 cat "$app_file"
   }
 
@@ -138,5 +106,4 @@ function queue_application() {
   echo "$elastic_servicename ✓ $app_domain/$app_path complete"
 }
 
-# If NEWRELIC_APP_ID is set
 main
