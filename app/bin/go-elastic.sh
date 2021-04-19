@@ -32,11 +32,11 @@ function main() {
   # Comment this out for production
   gcloud container clusters get-credentials p4-development --zone us-central1-a --project planet-4-151612
   # This is for production
-  # POD_NAME=$(kubectl get pods --namespace default -l "app=elasticsearch,component=client,release=p4-es" -o jsonpath="{.items[0].metadata.name}") # for prod
-  POD_NAME=$(kubectl get pods --namespace elastic -l "app=elasticsearch-client,release=p4-es-client" -o jsonpath="{.items[0].metadata.name}") # for dev
+  POD_NAME=$(kubectl get pods --namespace default -l "app=elasticsearch,component=client,release=p4-es" -o jsonpath="{.items[0].metadata.name}") # for prod
+  # POD_NAME=$(kubectl get pods --namespace elastic -l "app=elasticsearch-client,release=p4-es-client" -o jsonpath="{.items[0].metadata.name}") # for dev
 
-  # kubectl port-forward --namespace default "$POD_NAME" 9200:9200 & # for prod
-  kubectl port-forward --namespace elastic "$POD_NAME" 9200:9200 & # for dev
+  kubectl port-forward --namespace default "$POD_NAME" 9200:9200 & # for prod
+  # kubectl port-forward --namespace elastic "$POD_NAME" 9200:9200 & # for dev
 
   kube_pid="$!"
   echo "Opened, PID is: $kube_pid"
