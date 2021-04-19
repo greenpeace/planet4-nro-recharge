@@ -77,7 +77,7 @@ function create_application_id_file() {
   secret=$(echo "$deployment" | cut -d'-' -f1-2)-db
 
   describe=$(kubectl -n "$ns" describe deployment "$name")
-  mysql_user=$(kubectl -n "$ns" get secret $secret --template="{{.data.username | base64decode }}")
+  mysql_user=$(kubectl -n "$ns" get secret "$secret" --template="{{.data.username | base64decode }}")
 
   [ -z "$describe" ] && {
     >&2 echo "ERROR: deployment not found: $deployment"
