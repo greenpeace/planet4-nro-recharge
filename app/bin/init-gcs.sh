@@ -86,7 +86,6 @@ function create_application_id_file() {
   app_domain=$(grep APP_HOSTNAME <<<"$describe" | cut -d: -f2 | xargs)
   app_path=$(grep APP_HOSTPATH <<<"$describe" | cut -d: -f2 | xargs)
   app_environment=$(grep APP_ENV <<<"$describe" | cut -d: -f2 | xargs)
-  mysql_user=$(grep MYSQL_USER <<<"$describe" | cut -d: -f2 | xargs)
 
   echo " > $name :: $app_domain/$app_path"
 
