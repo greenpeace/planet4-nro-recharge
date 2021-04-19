@@ -23,7 +23,7 @@ sla_file="/tmp/sla-$RECHARGE_PERIOD-$endtime-$elastic_servicename.json"
 
 # Application SLA data
 
-echo "$elastic_servicename - Converting NewRelic output to BigQuery table format ..."
+echo "$elastic_servicename - Converting Elastic output to BigQuery table format ..."
 
 output_file="/tmp/etl-appdex-$RECHARGE_PERIOD-$endtime-$elastic_servicename.json"
 

@@ -100,26 +100,19 @@ function create_application_id_file() {
 
   }
 
-  app_name=$(grep NEWRELIC_APPNAME <<<"$describe" | cut -d: -f2 | xargs)
+  mysql_user=$(grep MYSQL_USER <<<"$describe" | cut -d: -f2 | xargs)
   [ -z "$app_name" ] && {
-    >&2 echo "ERROR: Application name is blank: '$app_name'"
+    >&2 echo "ERROR: MySQL Username is blank: '$app_name'"
     exit 1
   }
 
-  app_id=$(newrelic-get-application-id.sh "$app_name")
-  [ -z "$app_id" ] && {
-    >&2 echo "ERROR: Application ID is blank: '$app_id'"
-    exit 1
-  }
 
   mkdir -p "$app_domain/$app_path"
 
-  elastic_servicename=$(echo "$app_name" | tr '[:upper:]' '[:lower:]' |  tr " " "-")
+  elastic_servicename="$mysql_user-$app_environment"
   echo "Elastic Service Name: $elastic_servicename"
   # Create id JSON file in bucket app_path
   jq -cnM \
-    --arg newrelic_id "$app_id" \
-    --arg newrelic_name "$app_name" \
     --arg app_domain "$app_domain" \
     --arg app_path "$app_path" \
     --arg app_environment "$app_environment" \
