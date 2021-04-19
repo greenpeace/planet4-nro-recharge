@@ -20,7 +20,7 @@ DOCKER_BUILDKIT ?= 1
 KUBECTL_VERSION ?= 1.14.0
 
 # Default period for ETL
-RECHARGE_PERIOD ?= month
+RECHARGE_PERIOD ?= day
 
 # Set default dataset for testing
 ifeq ($(strip $(RECHARGE_BQ_DATASET)),)
