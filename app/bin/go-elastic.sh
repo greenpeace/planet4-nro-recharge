@@ -93,7 +93,7 @@ function queue_application() {
   }
   set -e
 
-  >&2 echo "$elastic_servicename - Processing $newrelic_name ..."
+  >&2 echo "$elastic_servicename - Processing ..."
 
   # Fetch SLA data for application on date
   elastic-sla-get.sh "$elastic_servicename" "$app_environment"
