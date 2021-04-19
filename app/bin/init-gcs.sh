@@ -49,14 +49,14 @@ function get_recharge_ids() {
   echo
   echo "Creating application id files:"
   echo
-  for deployment in $(kubectl get deployment -l app=planet4,environment=development,component=php --all-namespaces -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | tail -n+2)
-  do
-    create_application_id_file "$deployment" &
-  done
-  # for deployment in $(kubectl get deployment -l app=planet4,environment=production,component=php --all-namespaces -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | tail -n+2)
+  # for deployment in $(kubectl get deployment -l app=planet4,environment=development,component=php --all-namespaces -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | tail -n+2)
   # do
   #   create_application_id_file "$deployment" &
   # done
+  for deployment in $(kubectl get deployment -l app=planet4,environment=production,component=php --all-namespaces -o custom-columns=NAME:.metadata.name,NAMESPACE:.metadata.namespace | tail -n+2)
+  do
+    create_application_id_file "$deployment" &
+  done
   IFS=$ifs;
 
   wait
