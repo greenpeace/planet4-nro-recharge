@@ -63,6 +63,27 @@ jobs:
           when: on_fail
           command: TYPE="Daily" EXTRA_TEXT="@rawalker" notify-job-failure.sh
 
+  daily_dev:
+    <<: *defaults
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - checkout
+      - run: make lint
+      - run: make clean
+      - run: docker-login.sh
+      - run: make pull
+      - run: make build
+      - run: make test
+      - run: |
+          mkdir -p /tmp/workspace/var
+          echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
+      - run: make -j2 push
+      - run:
+          name: Notify failure
+          when: on_fail
+          command: TYPE="Build-push greenpeaceinternational/p4-nro-recharge" notify-job-failure.sh
+
   monthly:
     docker:
       - image: greenpeaceinternational/p4-nro-recharge:latest
@@ -138,6 +159,10 @@ workflows:
       - id:
           context: org-global
       - daily:
+          context: org-global
+          requires:
+            - id
+      - daily_dev:
           context: org-global
           requires:
             - id
