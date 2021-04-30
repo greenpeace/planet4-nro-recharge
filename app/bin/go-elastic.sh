@@ -37,7 +37,8 @@ function main() {
   # kubectl port-forward --namespace elastic "$POD_NAME" 9200:9200 & # for dev
 
   kube_pid="$!"
-  echo "Opened, PID is: $kube_pid"
+  echo "Opened sleeping for a bit to initialize, PID is: $kube_pid"
+  sleep 5
 
   N=4
   open_sem $N
